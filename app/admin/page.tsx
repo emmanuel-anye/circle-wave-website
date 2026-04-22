@@ -1,3 +1,5 @@
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import PageTransition from "@/components/ui/PageTransition";
 import Reveal from "@/components/ui/Reveal";
 import AdminDashboardClient from "@/components/admin/AdminDashboardClient";
@@ -8,6 +10,13 @@ import {
 } from "@/lib/admin-data";
 
 export default async function AdminPage() {
+  const cookieStore = await cookies();
+  const isAuthed = cookieStore.get("cw_admin_auth")?.value === "authenticated";
+
+  if (!isAuthed) {
+    redirect("/admin/login");
+  }
+
   const [employerRequests, jobApplications, contactMessages] = await Promise.all([
     getEmployerRequests(),
     getJobApplications(),

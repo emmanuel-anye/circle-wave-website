@@ -176,6 +176,18 @@ export default function AdminDashboardClient({
 
   return (
     <div className="mt-10">
+      <div className="mb-6 flex justify-end">
+        <button
+          type="button"
+          onClick={async () => {
+            await fetch("/api/admin-logout", { method: "POST" });
+            window.location.href = "/admin/login";
+          }}
+          className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+        >
+          Log Out
+        </button>
+      </div>
       <div className="grid gap-6 md:grid-cols-3">
         <SummaryCard label="Employer Requests" value={employerRequests.length} />
         <SummaryCard label="Job Applications" value={jobApplications.length} />

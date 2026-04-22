@@ -32,7 +32,6 @@ export default function Footer() {
             <div className="mt-4 flex flex-col gap-2 text-sm text-blue-100">
               <Link href="/privacy">Privacy Policy</Link>
               <Link href="/terms">Terms of Use</Link>
-              <Link href="/admin">Admin</Link>
               <a href="mailto:info@circleswave.net">info@circleswave.net</a>
               <a href="tel:+19453045386">+1 945 304-5386</a>
             </div>
