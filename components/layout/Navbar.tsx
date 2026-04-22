@@ -21,9 +21,9 @@ export default function Navbar() {
           <Link href="/employers" className="text-gray-700 hover:text-blue-600 transition">
             Employers
           </Link>
-          <a href="/careers" className="text-gray-700 hover:text-blue-600 transition">
+          <Link href="/careers" className="text-gray-700 hover:text-blue-600 transition">
             Careers
-          </a>
+          </Link>
         </div>
 
         <Link href="/employers">

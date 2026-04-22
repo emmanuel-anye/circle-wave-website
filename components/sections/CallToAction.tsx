@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import FadeIn from "@/components/ui/FadeIn";
 import { motion } from "framer-motion";
 
@@ -23,13 +24,15 @@ export default function CallToAction() {
                 Tell us your hiring needs, required roles, and timelines. We’ll
                 connect you with trained professionals ready to deliver results.
               </p>
-              <motion.button
-                whileHover={{ scale: 1.04, y: -2 }}
-                whileTap={{ scale: 0.98 }}
-                className="mt-6 rounded-lg bg-white px-6 py-3 font-semibold text-blue-900 hover:bg-gray-100 transition"
-              >
-                Request Staffing
-              </motion.button>
+              <Link href="/employers">
+                <motion.span
+                  whileHover={{ scale: 1.04, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="mt-6 inline-flex rounded-lg bg-white px-6 py-3 font-semibold text-blue-900 hover:bg-gray-100 transition"
+                >
+                  Request Staffing
+                </motion.span>
+              </Link>
             </motion.div>
           </FadeIn>
 
@@ -48,13 +51,15 @@ export default function CallToAction() {
                 Apply to be part of our talent pool and access customer service
                 opportunities across industries worldwide.
               </p>
-              <motion.button
-                whileHover={{ scale: 1.04, y: -2 }}
-                whileTap={{ scale: 0.98 }}
-                className="mt-6 rounded-lg border border-white px-6 py-3 font-semibold text-white hover:bg-white hover:text-blue-700 transition"
-              >
-                Apply for Jobs
-              </motion.button>
+              <Link href="/careers">
+                <motion.span
+                  whileHover={{ scale: 1.04, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="mt-6 inline-flex rounded-lg border border-white px-6 py-3 font-semibold text-white hover:bg-white hover:text-blue-700 transition"
+                >
+                  Apply for Jobs
+                </motion.span>
+              </Link>
             </motion.div>
           </FadeIn>
         </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
 
 export default function Hero() {
@@ -60,21 +61,25 @@ export default function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.3 }}
           >
-            <motion.button
-              whileHover={{ scale: 1.04, y: -2 }}
-              whileTap={{ scale: 0.98 }}
-              className="bg-white text-blue-800 px-6 py-3 rounded-lg font-semibold shadow-lg"
-            >
-              Request Staffing
-            </motion.button>
+            <Link href="/employers">
+              <motion.span
+                whileHover={{ scale: 1.04, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                className="inline-flex bg-white text-blue-800 px-6 py-3 rounded-lg font-semibold shadow-lg"
+              >
+                Request Staffing
+              </motion.span>
+            </Link>
 
-            <motion.button
-              whileHover={{ scale: 1.04, y: -2 }}
-              whileTap={{ scale: 0.98 }}
-              className="border border-white/70 px-6 py-3 rounded-lg text-white font-semibold"
-            >
-              Apply for Jobs
-            </motion.button>
+            <Link href="/careers">
+              <motion.span
+                whileHover={{ scale: 1.04, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                className="inline-flex border border-white/70 px-6 py-3 rounded-lg text-white font-semibold"
+              >
+                Apply for Jobs
+              </motion.span>
+            </Link>
           </motion.div>
         </div>
       </div>
