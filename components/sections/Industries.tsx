@@ -6,8 +6,8 @@ import { motion } from "framer-motion";
 
 export default function Industries() {
   return (
-    <section id="industries" className="py-24 bg-slate-50">
-      <div className="max-w-7xl mx-auto px-6">
+    <section id="industries" className="bg-slate-50 py-24">
+  <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <FadeIn className="max-w-3xl">
           <p className="text-sm font-semibold uppercase tracking-wider text-blue-600">
             Industries We Serve

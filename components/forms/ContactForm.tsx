@@ -46,7 +46,7 @@ export default function ContactForm() {
   }
 
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+    <div className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
       <h2 className="text-2xl font-semibold text-slate-900">
         Send us a message
       </h2>

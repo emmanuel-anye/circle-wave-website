@@ -2,8 +2,8 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="bg-blue-950 text-white py-12 mt-20">
-      <div className="max-w-7xl mx-auto px-6">
+    <footer className="mt-20 bg-blue-950 py-12 text-white">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="grid gap-10 md:grid-cols-4">
           <div className="md:col-span-2">
             <h2 className="text-lg font-semibold">Circle Wave</h2>

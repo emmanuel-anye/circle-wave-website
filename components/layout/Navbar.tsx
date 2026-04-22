@@ -1,47 +1,137 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { Menu, X } from "lucide-react";
+import { useEffect, useState } from "react";
+
+const navLinks = [
+  { href: "/about", label: "About" },
+  { href: "/services", label: "Services" },
+  { href: "/industries", label: "Industries" },
+  { href: "/employers", label: "Employers" },
+  { href: "/careers", label: "Careers" },
+  { href: "/contact", label: "Contact" },
+];
 
 export default function Navbar() {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    function onScroll() {
+      setScrolled(window.scrollY > 8);
+    }
+
+    onScroll();
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
+
   return (
-    <nav className="w-full bg-white/80 backdrop-blur border-b sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-        <Link href="/" className="text-xl font-bold text-blue-900">
-          Circle Wave
-        </Link>
+    <>
+      <nav
+        className={`sticky top-0 z-50 w-full border-b transition-all duration-300 ${
+          scrolled
+            ? "border-slate-200 bg-white/95 shadow-sm backdrop-blur"
+            : "border-transparent bg-white/80 backdrop-blur"
+        }`}
+      >
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6">
+          <Link href="/" className="text-lg font-bold text-blue-900 sm:text-xl">
+            Circle Wave
+          </Link>
 
-        <div className="hidden md:flex items-center gap-8 text-sm font-medium">
-          <Link href="/about" className="text-gray-700 hover:text-blue-600 transition">
-            About
-          </Link>
-          <Link href="/services" className="text-gray-700 hover:text-blue-600 transition">
-            Services
-          </Link>
-          <Link href="/industries" className="text-gray-700 hover:text-blue-600 transition">
-            Industries
-          </Link>
-          <Link href="/employers" className="text-gray-700 hover:text-blue-600 transition">
-            Employers
-          </Link>
-          <Link href="/careers" className="text-gray-700 hover:text-blue-600 transition">
-            Careers
-          </Link>
-          <Link href="/contact" className="text-gray-700 hover:text-blue-600 transition">
-            Contact
-          </Link>
-        </div>
+          <div className="hidden items-center gap-8 md:flex">
+            <div className="flex items-center gap-6 text-sm font-medium">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="text-gray-700 transition hover:text-blue-600"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
 
-        <Link href="/employers">
-          <motion.button
-            whileHover={{ scale: 1.04, y: -1 }}
-            whileTap={{ scale: 0.98 }}
-            className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition shadow-sm"
+            <Link href="/employers">
+              <motion.span
+                whileHover={{ scale: 1.03, y: -1 }}
+                whileTap={{ scale: 0.98 }}
+                className="inline-flex rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+              >
+                Request Staffing
+              </motion.span>
+            </Link>
+          </div>
+
+          <button
+            type="button"
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileOpen}
+            onClick={() => setMobileOpen((prev) => !prev)}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50 md:hidden"
           >
-            Request Staffing
-          </motion.button>
-        </Link>
-      </div>
-    </nav>
+            {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
+      </nav>
+
+      <AnimatePresence>
+        {mobileOpen && (
+          <>
+            <motion.div
+              className="fixed inset-0 z-40 bg-slate-950/30 md:hidden"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileOpen(false)}
+            />
+
+            <motion.div
+              className="fixed inset-x-0 top-[73px] z-50 border-b border-slate-200 bg-white shadow-xl md:hidden"
+              initial={{ opacity: 0, y: -16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+            >
+              <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-4 sm:px-6">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setMobileOpen(false)}
+                    className="rounded-lg px-3 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 hover:text-blue-600"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+
+                <Link
+                  href="/employers"
+                  onClick={() => setMobileOpen(false)}
+                  className="mt-2 inline-flex items-center justify-center rounded-lg bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
+                >
+                  Request Staffing
+                </Link>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

@@ -3,12 +3,12 @@ import { services } from "@/content/services";
 export default function ServicesPage() {
   return (
     <section className="bg-slate-50 py-20">
-      <div className="mx-auto max-w-6xl px-6">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="max-w-3xl">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
             Services
           </p>
-          <h1 className="mt-3 text-4xl font-bold tracking-tight text-slate-900 md:text-5xl">
+          <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl md:text-5xl">
             Customer service staffing and consulting solutions
           </h1>
           <p className="mt-6 text-lg leading-8 text-slate-600">

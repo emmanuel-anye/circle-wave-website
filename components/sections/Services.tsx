@@ -23,8 +23,8 @@ const icons = [
 
 export default function Services() {
   return (
-    <section id="services" className="py-24 bg-white">
-      <div className="max-w-7xl mx-auto px-6">
+    <section id="services" className="bg-white py-24">
+  <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <FadeIn className="max-w-3xl">
           <p className="text-sm font-semibold uppercase tracking-wider text-blue-600">
             Our Services
