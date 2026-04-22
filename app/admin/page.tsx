@@ -148,10 +148,33 @@ export default async function AdminPage() {
                         </div>
 
                         <div className="mt-5 grid gap-4 md:grid-cols-2">
-                          <AdminField
-                            label="Resume Path"
-                            value={application.resume_path || application.resume_link}
-                          />
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                              Resume
+                            </p>
+
+                            {application.resume_url ? (
+                              <a
+                                href={application.resume_url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="mt-1 inline-block break-all text-sm leading-6 text-blue-600 hover:text-blue-700"
+                              >
+                                Open uploaded resume
+                              </a>
+                            ) : application.resume_link ? (
+                              <a
+                                href={application.resume_link}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="mt-1 inline-block break-all text-sm leading-6 text-blue-600 hover:text-blue-700"
+                              >
+                                Open resume link
+                              </a>
+                            ) : (
+                              <p className="mt-1 text-sm leading-6 text-slate-700">—</p>
+                            )}
+                          </div>
                           <AdminField
                             label="Cover Letter"
                             value={application.cover_letter}

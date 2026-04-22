@@ -5,6 +5,13 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+export function getResumePublicUrl(path?: string | null) {
+  if (!path) return null;
+
+  const { data } = supabase.storage.from("resumes").getPublicUrl(path);
+  return data.publicUrl;
+}
+
 export async function getEmployerRequests() {
   const { data, error } = await supabase
     .from("employer_requests")
@@ -30,7 +37,10 @@ export async function getJobApplications() {
     return [];
   }
 
-  return data ?? [];
+  return (data ?? []).map((item) => ({
+    ...item,
+    resume_url: getResumePublicUrl(item.resume_path),
+  }));
 }
 
 export async function getContactMessages() {
