@@ -9,7 +9,7 @@ export default function FinalCTA() {
     <section className="bg-slate-50 py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <Reveal>
-          <div className="rounded-3xl border border-slate-200 bg-white px-6 py-10 shadow-sm sm:px-8 md:px-10">
+          <div className="rounded-3xl border border-slate-200 bg-gradient-to-r from-blue-50 to-white px-6 py-10 shadow-sm sm:px-8 md:px-10">
             <div className="grid gap-8 lg:grid-cols-[1.5fr_1fr] lg:items-center">
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
@@ -26,7 +26,7 @@ export default function FinalCTA() {
 
               <div className="flex flex-col gap-4 sm:flex-row lg:flex-col lg:items-start">
                 <Link href="/employers">
-                  <MotionButton className="inline-flex w-full justify-center rounded-xl bg-blue-600 px-6 py-3.5 font-semibold text-white transition hover:bg-blue-700 sm:w-auto">
+                  <MotionButton className="inline-flex w-full justify-center rounded-xl bg-blue-600 shadow-lg px-6 py-3.5 font-semibold text-white transition hover:bg-blue-700 sm:w-auto">
                     Request Staffing
                   </MotionButton>
                 </Link>

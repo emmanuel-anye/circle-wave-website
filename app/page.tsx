@@ -13,12 +13,19 @@ export default function Home() {
     <PageTransition>
       <>
         <Hero />
+        <div className="section-divider" />
         <Stats />
+        <div className="section-divider" />
         <Services />
+        <div className="section-divider" />
         <Process />
+        <div className="section-divider" />
         <Industries />
+        <div className="section-divider" />
         <WhyChooseUs />
+        <div className="section-divider" />
         <CallToAction />
+        <div className="section-divider" />
         <FinalCTA />
       </>
     </PageTransition>

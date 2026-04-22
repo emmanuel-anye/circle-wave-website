@@ -44,3 +44,7 @@ textarea,
 select {
   -webkit-tap-highlight-color: transparent;
 }
+
+.section-divider {
+  border-top: 1px solid rgba(15, 23, 42, 0.05);
+}

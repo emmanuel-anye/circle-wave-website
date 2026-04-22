@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Reveal from "@/components/ui/Reveal";
 import { StaggerGroup, StaggerItem } from "@/components/ui/Stagger";
 import HoverCard from "@/components/ui/HoverCard";
@@ -9,22 +10,22 @@ const items = [
   {
     icon: Globe,
     title: "Global perspective",
-    text: "We help businesses think beyond a single market and build support operations with international flexibility.",
+    text: "We help businesses build support operations with international flexibility and reach.",
   },
   {
     icon: Users,
     title: "Customer service focus",
-    text: "Our work centers on customer support, service quality, staffing needs, and operational consistency.",
+    text: "Everything we do is centered on delivering better customer support outcomes.",
   },
   {
     icon: Layers3,
     title: "Flexible engagement",
-    text: "We support permanent hiring, temporary coverage, seasonal scaling, and outsourced service models.",
+    text: "From contract to full-scale outsourcing, we adapt to your business model.",
   },
   {
     icon: ShieldCheck,
     title: "Operational trust",
-    text: "We consider compliance, quality, and structured hiring needs as part of every staffing conversation.",
+    text: "We prioritize quality, compliance, and consistency in every engagement.",
   },
 ];
 
@@ -32,20 +33,47 @@ export default function WhyChooseUs() {
   return (
     <section className="bg-white py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <Reveal className="max-w-3xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
-            Why Choose Us
-          </p>
-          <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-            Strategic support for growing service operations
-          </h2>
-          <p className="mt-4 text-lg leading-8 text-slate-600">
-            Circle Wave combines staffing support, customer service understanding,
-            and flexible workforce thinking to help businesses scale more confidently.
-          </p>
-        </Reveal>
 
-        <StaggerGroup className="mt-14 grid gap-6 md:grid-cols-2">
+        {/* TOP GRID (TEXT + IMAGE) */}
+        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
+          
+          {/* TEXT */}
+          <Reveal className="max-w-xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
+              Why Choose Us
+            </p>
+
+            <h2 className="mt-4 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+              Strategic support for modern customer operations
+            </h2>
+
+            <p className="mt-6 text-lg leading-8 text-slate-600">
+              Circle Wave combines staffing expertise, operational insight, and
+              flexible workforce solutions to help businesses scale support teams
+              effectively.
+            </p>
+          </Reveal>
+
+          {/* IMAGE */}
+          <Reveal>
+            <div className="relative">
+              <div className="absolute -inset-4 rounded-[2rem] bg-blue-100/40 blur-2xl" />
+
+              <div className="relative overflow-hidden rounded-[2rem] shadow-xl">
+                <Image
+                  src="/images/team-collaboration.jpg"
+                  alt="Team collaborating in a modern workspace"
+                  width={1200}
+                  height={900}
+                  className="h-[300px] w-full object-cover sm:h-[360px] lg:h-[420px]"
+                />
+              </div>
+            </div>
+          </Reveal>
+        </div>
+
+        {/* FEATURE CARDS */}
+        <StaggerGroup className="mt-16 grid gap-6 md:grid-cols-2">
           {items.map((item) => {
             const Icon = item.icon;
 
@@ -55,15 +83,20 @@ export default function WhyChooseUs() {
                   <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 text-blue-700">
                     <Icon size={22} />
                   </div>
+
                   <h3 className="mt-5 text-xl font-semibold text-slate-900">
                     {item.title}
                   </h3>
-                  <p className="mt-4 leading-8 text-slate-600">{item.text}</p>
+
+                  <p className="mt-4 leading-8 text-slate-600">
+                    {item.text}
+                  </p>
                 </HoverCard>
               </StaggerItem>
             );
           })}
         </StaggerGroup>
+
       </div>
     </section>
   );
