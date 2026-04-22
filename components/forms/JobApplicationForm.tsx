@@ -1,10 +1,9 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { motion } from "framer-motion";
 import { buttonMotion } from "@/lib/motion";
-import Reveal from "@/components/ui/Reveal";
 
 const initialForm = {
   full_name: "",
@@ -15,12 +14,13 @@ const initialForm = {
   experience_level: "",
   languages: "",
   technical_skills: "",
-  resume_link: "",
+  resume_path: "",
   cover_letter: "",
 };
 
 export default function JobApplicationForm() {
   const [formData, setFormData] = useState(initialForm);
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
@@ -32,33 +32,76 @@ export default function JobApplicationForm() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   }
 
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0] ?? null;
+    setResumeFile(file);
+  }
+
+  async function uploadResume(file: File) {
+    const fileExt = file.name.split(".").pop();
+    const fileName = `${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
+    const filePath = fileExt ? fileName : `${fileName}.pdf`;
+
+    const { error } = await supabase.storage
+      .from("resumes")
+      .upload(filePath, file, {
+        upsert: false,
+      });
+
+    if (error) {
+      throw error;
+    }
+
+    return filePath;
+  }
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
     setSuccess("");
     setErrorMsg("");
 
-    const { error } = await supabase.from("job_applications").insert([formData]);
+    try {
+      let uploadedResumePath = "";
 
-    if (error) {
-      setErrorMsg("Something went wrong. Please try again.");
-      console.error(error);
-    } else {
+      if (!resumeFile) {
+        throw new Error("Please upload your resume.");
+      }
+
+      uploadedResumePath = await uploadResume(resumeFile);
+
+      const payload = {
+        ...formData,
+        resume_path: uploadedResumePath,
+      };
+
+      const { error } = await supabase.from("job_applications").insert([payload]);
+
+      if (error) {
+        throw error;
+      }
+
       setSuccess("Application submitted successfully.");
       setFormData(initialForm);
+      setResumeFile(null);
+    } catch (error) {
+      console.error(error);
+      setErrorMsg(
+        error instanceof Error ? error.message : "Something went wrong. Please try again."
+      );
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   }
 
   return (
     <section className="bg-slate-50 py-20">
-      <div className="mx-auto max-w-5xl px-6">
+      <div className="mx-auto max-w-5xl px-4 sm:px-6">
         <div className="mb-10 max-w-3xl">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
             Careers
           </p>
-          <h1 className="mt-3 text-4xl font-bold tracking-tight text-slate-900 md:text-5xl">
+          <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl md:text-5xl">
             Apply for customer service roles
           </h1>
           <p className="mt-4 text-lg leading-8 text-slate-600">
@@ -67,17 +110,16 @@ export default function JobApplicationForm() {
           </p>
         </div>
 
-        <Reveal>
-          <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-200/60">
-            <div className="border-b border-slate-200 bg-gradient-to-r from-blue-950 to-blue-700 px-6 py-6 sm:px-8 sm:py-8 text-white">
-              <h2 className="text-2xl font-semibold">Candidate Application</h2>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-blue-100">
-                Complete the form below to be considered for current and upcoming
-                customer support opportunities.
-              </p>
-            </div>
+        <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-200/60">
+          <div className="border-b border-slate-200 bg-gradient-to-r from-blue-950 to-blue-700 px-6 py-6 text-white sm:px-8 sm:py-8">
+            <h2 className="text-2xl font-semibold">Candidate Application</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-blue-100">
+              Complete the form below to be considered for current and upcoming
+              customer support opportunities.
+            </p>
+          </div>
 
-            <form onSubmit={handleSubmit} className="grid gap-8 px-6 py-6 sm:px-8 sm:py-8">
+          <form onSubmit={handleSubmit} className="grid gap-8 px-6 py-6 sm:px-8 sm:py-8">
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
                 Personal Information
@@ -248,20 +290,22 @@ export default function JobApplicationForm() {
               <div className="mt-4 grid gap-6">
                 <div>
                   <label
-                    htmlFor="resume_link"
+                    htmlFor="resume"
                     className="mb-2 block text-sm font-medium text-slate-700"
                   >
-                    Resume Link
+                    Resume Upload
                   </label>
                   <input
-                    id="resume_link"
-                    name="resume_link"
-                    placeholder="Google Drive, Dropbox, or portfolio link"
-                    value={formData.resume_link}
-                    onChange={handleChange}
+                    id="resume"
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    onChange={handleFileChange}
                     required
-                    className="input"
+                    className="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-700 file:mr-4 file:rounded-lg file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:font-medium file:text-blue-700 hover:file:bg-blue-100"
                   />
+                  <p className="mt-2 text-sm text-slate-500">
+                    Accepted formats: PDF, DOC, DOCX
+                  </p>
                 </div>
 
                 <div>
@@ -299,20 +343,19 @@ export default function JobApplicationForm() {
               </motion.button>
 
               {success && (
-                <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 transition-all duration-200 ease-out">
+                <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 transition">
                   {success}
                 </div>
               )}
 
               {errorMsg && (
-                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 transition-all duration-200 ease-out">
+                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 transition">
                   {errorMsg}
                 </div>
               )}
             </div>
           </form>
         </div>
-      </Reveal>
       </div>
     </section>
   );
