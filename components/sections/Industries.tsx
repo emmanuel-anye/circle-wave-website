@@ -1,10 +1,14 @@
+"use client";
+
+import FadeIn from "@/components/ui/FadeIn";
 import { industries } from "@/content/industries";
+import { motion } from "framer-motion";
 
 export default function Industries() {
   return (
-    <section className="py-24 bg-slate-50">
+    <section id="industries" className="py-24 bg-slate-50">
       <div className="max-w-7xl mx-auto px-6">
-        <div className="max-w-3xl">
+        <FadeIn className="max-w-3xl">
           <p className="text-sm font-semibold uppercase tracking-wider text-blue-600">
             Industries We Serve
           </p>
@@ -15,16 +19,18 @@ export default function Industries() {
             We support organizations across sectors with tailored customer
             service and staffing solutions.
           </p>
-        </div>
+        </FadeIn>
 
         <div className="mt-14 flex flex-wrap gap-4">
-          {industries.map((industry) => (
-            <span
-              key={industry}
-              className="rounded-full bg-white border border-gray-200 px-5 py-2 text-sm font-medium text-gray-700 shadow-sm"
-            >
-              {industry}
-            </span>
+          {industries.map((industry, index) => (
+            <FadeIn key={industry} delay={index * 0.04} y={16}>
+              <motion.span
+                whileHover={{ y: -3, scale: 1.03 }}
+                className="inline-block rounded-full bg-white border border-gray-200 px-5 py-2 text-sm font-medium text-gray-700 shadow-sm"
+              >
+                {industry}
+              </motion.span>
+            </FadeIn>
           ))}
         </div>
       </div>

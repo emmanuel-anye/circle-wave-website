@@ -1,4 +1,7 @@
+"use client";
+
 import { services } from "@/content/services";
+import FadeIn from "@/components/ui/FadeIn";
 import {
   Users,
   GraduationCap,
@@ -7,6 +10,7 @@ import {
   BarChart,
   Briefcase,
 } from "lucide-react";
+import { motion } from "framer-motion";
 
 const icons = [
   Users,
@@ -19,9 +23,9 @@ const icons = [
 
 export default function Services() {
   return (
-    <section className="py-24 bg-white">
+    <section id="services" className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-6">
-        <div className="max-w-3xl">
+        <FadeIn className="max-w-3xl">
           <p className="text-sm font-semibold uppercase tracking-wider text-blue-600">
             Our Services
           </p>
@@ -32,29 +36,35 @@ export default function Services() {
             From staffing to optimization, Circle Wave helps companies scale
             customer experience operations with confidence.
           </p>
-        </div>
+        </FadeIn>
 
         <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           {services.map((service, index) => {
             const Icon = icons[index];
 
             return (
-              <div
-                key={service.title}
-                className="group rounded-2xl border border-gray-200 p-6 hover:shadow-lg transition"
-              >
-                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
-                  <Icon size={24} />
-                </div>
+              <FadeIn key={service.title} delay={index * 0.08}>
+                <motion.div
+                  whileHover={{ y: -8, scale: 1.01 }}
+                  transition={{ type: "spring", stiffness: 260, damping: 18 }}
+                  className="group rounded-2xl border border-gray-200 bg-white p-6 shadow-sm hover:shadow-xl"
+                >
+                  <motion.div
+                    whileHover={{ rotate: 4, scale: 1.08 }}
+                    className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-blue-700"
+                  >
+                    <Icon size={24} />
+                  </motion.div>
 
-                <h3 className="text-xl font-semibold text-gray-900">
-                  {service.title}
-                </h3>
+                  <h3 className="text-xl font-semibold text-gray-900">
+                    {service.title}
+                  </h3>
 
-                <p className="mt-3 text-gray-600 leading-7">
-                  {service.description}
-                </p>
-              </div>
+                  <p className="mt-3 text-gray-600 leading-7">
+                    {service.description}
+                  </p>
+                </motion.div>
+              </FadeIn>
             );
           })}
         </div>
