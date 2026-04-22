@@ -1,5 +1,6 @@
 import "./globals.css";
 import MainLayout from "@/components/layout/MainLayout";
+import MotionProvider from "@/components/ui/MotionProvider";
 
 export const metadata = {
   title: "Circle Wave",
@@ -8,13 +9,15 @@ export const metadata = {
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
     <html lang="en">
       <body>
-        <MainLayout>{children}</MainLayout>
+        <MotionProvider>
+          <MainLayout>{children}</MainLayout>
+        </MotionProvider>
       </body>
     </html>
   );

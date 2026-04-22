@@ -1,14 +1,15 @@
 "use client";
 
-import FadeIn from "@/components/ui/FadeIn";
 import { industries } from "@/content/industries";
-import { motion } from "framer-motion";
+import Reveal from "@/components/ui/Reveal";
+import { StaggerGroup, StaggerItem } from "@/components/ui/Stagger";
+import HoverCard from "@/components/ui/HoverCard";
 
 export default function Industries() {
   return (
     <section id="industries" className="bg-slate-50 py-24">
-  <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <FadeIn className="max-w-3xl">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <Reveal className="max-w-3xl">
           <p className="text-sm font-semibold uppercase tracking-wider text-blue-600">
             Industries We Serve
           </p>
@@ -19,20 +20,20 @@ export default function Industries() {
             We support organizations across sectors with tailored customer
             service and staffing solutions.
           </p>
-        </FadeIn>
+        </Reveal>
 
-        <div className="mt-14 flex flex-wrap gap-4">
-          {industries.map((industry, index) => (
-            <FadeIn key={industry} delay={index * 0.04} y={16}>
-              <motion.span
-                whileHover={{ y: -3, scale: 1.03 }}
-                className="inline-block rounded-full bg-white border border-gray-200 px-5 py-2 text-sm font-medium text-gray-700 shadow-sm"
-              >
+        <StaggerGroup
+          className="mt-14 flex flex-wrap gap-4"
+          staggerChildren={0.04}
+        >
+          {industries.map((industry) => (
+            <StaggerItem key={industry}>
+              <HoverCard className="inline-block rounded-full border border-gray-200 bg-white px-5 py-2 text-sm font-medium text-gray-700 shadow-sm">
                 {industry}
-              </motion.span>
-            </FadeIn>
+              </HoverCard>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerGroup>
       </div>
     </section>
   );

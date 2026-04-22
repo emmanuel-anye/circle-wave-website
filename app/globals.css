@@ -26,7 +26,7 @@ body {
 }
 
 .input {
-  @apply w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100;
+  @apply w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 outline-none transition duration-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100;
 }
 
 html {
@@ -35,4 +35,12 @@ html {
 
 body {
   @apply bg-white text-slate-900 antialiased;
+}
+
+button,
+a,
+input,
+textarea,
+select {
+  -webkit-tap-highlight-color: transparent;
 }

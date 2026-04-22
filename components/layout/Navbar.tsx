@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import MotionButton from "@/components/ui/MotionButton";
 
 const navLinks = [
   { href: "/about", label: "About" },
@@ -60,21 +61,17 @@ export default function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="text-gray-700 transition hover:text-blue-600"
+                  className="relative text-gray-700 transition hover:text-blue-600"
                 >
-                  {link.label}
+                  <span>{link.label}</span>
                 </Link>
               ))}
             </div>
 
             <Link href="/employers">
-              <motion.span
-                whileHover={{ scale: 1.03, y: -1 }}
-                whileTap={{ scale: 0.98 }}
-                className="inline-flex rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
-              >
+              <MotionButton className="inline-flex rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700">
                 Request Staffing
-              </motion.span>
+              </MotionButton>
             </Link>
           </div>
 
@@ -123,9 +120,11 @@ export default function Navbar() {
                 <Link
                   href="/employers"
                   onClick={() => setMobileOpen(false)}
-                  className="mt-2 inline-flex items-center justify-center rounded-lg bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
+                  className="mt-2"
                 >
-                  Request Staffing
+                  <MotionButton className="inline-flex w-full items-center justify-center rounded-lg bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700">
+                    Request Staffing
+                  </MotionButton>
                 </Link>
               </div>
             </motion.div>

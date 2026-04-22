@@ -1,7 +1,10 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { buttonMotion } from "@/lib/motion";
+import Reveal from "@/components/ui/Reveal";
 
 const initialForm = {
   company_name: "",
@@ -70,16 +73,17 @@ export default function EmployerRequestForm() {
           </p>
         </div>
 
-        <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-200/60">
-          <div className="border-b border-slate-200 bg-gradient-to-r from-blue-950 to-blue-700 px-6 py-6 sm:px-8 sm:py-8 text-white">
-            <h2 className="text-2xl font-semibold">Staffing Request</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-blue-100">
-              Share your staffing requirements, preferred engagement model, and
-              business needs so we can recommend the right support structure.
-            </p>
-          </div>
+        <Reveal>
+          <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-200/60">
+            <div className="border-b border-slate-200 bg-gradient-to-r from-blue-950 to-blue-700 px-6 py-6 sm:px-8 sm:py-8 text-white">
+              <h2 className="text-2xl font-semibold">Staffing Request</h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-blue-100">
+                Share your staffing requirements, preferred engagement model, and
+                business needs so we can recommend the right support structure.
+              </p>
+            </div>
 
-          <form onSubmit={handleSubmit} className="grid gap-8 px-6 py-6 sm:px-8 sm:py-8">
+            <form onSubmit={handleSubmit} className="grid gap-8 px-6 py-6 sm:px-8 sm:py-8">
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
                 Company Information
@@ -352,28 +356,34 @@ export default function EmployerRequestForm() {
             </div>
 
             <div className="flex flex-col gap-4 border-t border-slate-200 pt-6">
-              <button
+              <motion.button
                 type="submit"
                 disabled={loading}
+                initial="rest"
+                animate="rest"
+                whileHover="hover"
+                whileTap="tap"
+                variants={buttonMotion}
                 className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-6 py-3.5 text-base font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {loading ? "Submitting..." : "Submit Request"}
-              </button>
+              </motion.button>
 
               {successMessage && (
-                <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+                <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 transition-all duration-200 ease-out">
                   {successMessage}
                 </div>
               )}
 
               {errorMessage && (
-                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 transition-all duration-200 ease-out">
                   {errorMessage}
                 </div>
               )}
             </div>
           </form>
         </div>
+      </Reveal>
       </div>
     </section>
   );
