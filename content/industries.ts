@@ -1,0 +1,16 @@
+export const industries = [
+  "Retail & E-Commerce",
+  "Banking & Financial Services",
+  "Healthcare & Insurance",
+  "Technology & SaaS",
+  "Telecommunications",
+  "Travel & Hospitality",
+  "Utilities & Energy",
+  "Education & E-Learning",
+  "Government & Public Services",
+  "Automotive",
+  "Real Estate & Property Management",
+  "Logistics & Transportation",
+  "Media & Entertainment",
+  "Nonprofit & NGOs",
+];
