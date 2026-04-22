@@ -12,17 +12,23 @@ export default function Navbar() {
         </Link>
 
         <div className="hidden md:flex items-center gap-8 text-sm font-medium">
-          <a href="#services" className="text-gray-700 hover:text-blue-600 transition">
+          <Link href="/about" className="text-gray-700 hover:text-blue-600 transition">
+            About
+          </Link>
+          <Link href="/services" className="text-gray-700 hover:text-blue-600 transition">
             Services
-          </a>
-          <a href="#industries" className="text-gray-700 hover:text-blue-600 transition">
+          </Link>
+          <Link href="/industries" className="text-gray-700 hover:text-blue-600 transition">
             Industries
-          </a>
+          </Link>
           <Link href="/employers" className="text-gray-700 hover:text-blue-600 transition">
             Employers
           </Link>
           <Link href="/careers" className="text-gray-700 hover:text-blue-600 transition">
             Careers
+          </Link>
+          <Link href="/contact" className="text-gray-700 hover:text-blue-600 transition">
+            Contact
           </Link>
         </div>
 
