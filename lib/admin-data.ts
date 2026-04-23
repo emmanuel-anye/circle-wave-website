@@ -86,3 +86,19 @@ export async function getPublicJobPostings() {
 
   return data ?? [];
 }
+
+export async function getPublicJobBySlug(slug: string) {
+  const { data, error } = await supabase
+    .from("job_postings")
+    .select("*")
+    .eq("slug", slug)
+    .eq("status", "open")
+    .maybeSingle();
+
+  if (error) {
+    console.error("Error fetching job by slug:", error);
+    return null;
+  }
+
+  return data;
+}

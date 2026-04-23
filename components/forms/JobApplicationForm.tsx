@@ -1,5 +1,6 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { motion } from "framer-motion";
@@ -19,6 +20,10 @@ const initialForm = {
 };
 
 export default function JobApplicationForm() {
+  const searchParams = useSearchParams();
+  const jobId = searchParams.get("jobId") || "";
+  const jobTitle = searchParams.get("jobTitle") || "";
+
   const [formData, setFormData] = useState(initialForm);
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -62,17 +67,17 @@ export default function JobApplicationForm() {
     setErrorMsg("");
 
     try {
-      let uploadedResumePath = "";
-
       if (!resumeFile) {
         throw new Error("Please upload your resume.");
       }
 
-      uploadedResumePath = await uploadResume(resumeFile);
+      const uploadedResumePath = await uploadResume(resumeFile);
 
       const payload = {
         ...formData,
         resume_path: uploadedResumePath,
+        job_id: jobId || null,
+        job_title_snapshot: jobTitle || null,
       };
 
       const { error } = await supabase.from("job_applications").insert([payload]);
@@ -108,6 +113,12 @@ export default function JobApplicationForm() {
             Join our global talent network and access remote customer support
             opportunities across industries.
           </p>
+
+          {jobTitle && (
+            <div className="mt-6 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+              You are applying for: <span className="font-semibold">{jobTitle}</span>
+            </div>
+          )}
         </div>
 
         <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-200/60">
@@ -126,10 +137,7 @@ export default function JobApplicationForm() {
               </h3>
               <div className="mt-4 grid gap-6 md:grid-cols-2">
                 <div>
-                  <label
-                    htmlFor="full_name"
-                    className="mb-2 block text-sm font-medium text-slate-700"
-                  >
+                  <label htmlFor="full_name" className="mb-2 block text-sm font-medium text-slate-700">
                     Full Name
                   </label>
                   <input
@@ -144,10 +152,7 @@ export default function JobApplicationForm() {
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="email"
-                    className="mb-2 block text-sm font-medium text-slate-700"
-                  >
+                  <label htmlFor="email" className="mb-2 block text-sm font-medium text-slate-700">
                     Email Address
                   </label>
                   <input
@@ -163,10 +168,7 @@ export default function JobApplicationForm() {
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="phone"
-                    className="mb-2 block text-sm font-medium text-slate-700"
-                  >
+                  <label htmlFor="phone" className="mb-2 block text-sm font-medium text-slate-700">
                     Phone Number
                   </label>
                   <input
@@ -180,10 +182,7 @@ export default function JobApplicationForm() {
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="location"
-                    className="mb-2 block text-sm font-medium text-slate-700"
-                  >
+                  <label htmlFor="location" className="mb-2 block text-sm font-medium text-slate-700">
                     Location
                   </label>
                   <input
@@ -204,10 +203,7 @@ export default function JobApplicationForm() {
               </h3>
               <div className="mt-4 grid gap-6 md:grid-cols-2">
                 <div>
-                  <label
-                    htmlFor="availability"
-                    className="mb-2 block text-sm font-medium text-slate-700"
-                  >
+                  <label htmlFor="availability" className="mb-2 block text-sm font-medium text-slate-700">
                     Availability
                   </label>
                   <select
@@ -248,10 +244,7 @@ export default function JobApplicationForm() {
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="languages"
-                    className="mb-2 block text-sm font-medium text-slate-700"
-                  >
+                  <label htmlFor="languages" className="mb-2 block text-sm font-medium text-slate-700">
                     Languages
                   </label>
                   <input
@@ -289,10 +282,7 @@ export default function JobApplicationForm() {
               </h3>
               <div className="mt-4 grid gap-6">
                 <div>
-                  <label
-                    htmlFor="resume"
-                    className="mb-2 block text-sm font-medium text-slate-700"
-                  >
+                  <label htmlFor="resume" className="mb-2 block text-sm font-medium text-slate-700">
                     Resume Upload
                   </label>
                   <input

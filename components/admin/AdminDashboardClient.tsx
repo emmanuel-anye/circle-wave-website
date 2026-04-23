@@ -35,6 +35,7 @@ type JobApplication = {
   resume_link?: string | null;
   resume_url?: string | null;
   cover_letter?: string | null;
+  job_title_snapshot?: string | null;
 };
 
 type JobPosting = {
@@ -433,6 +434,7 @@ export default function AdminDashboardClient({
                 >
                   <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                     <Field label="Full Name" value={application.full_name} />
+                    <Field label="Applied Role" value={application.job_title_snapshot} />
                     <Field label="Email" value={application.email} />
                     <Field label="Phone" value={application.phone} />
                     <Field label="Location" value={application.location} />
