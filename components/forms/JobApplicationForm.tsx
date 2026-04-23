@@ -6,23 +6,23 @@ import { supabase } from "@/lib/supabase";
 import { motion } from "framer-motion";
 import { buttonMotion } from "@/lib/motion";
 
-const initialForm = {
-  full_name: "",
-  email: "",
-  phone: "",
-  location: "",
-  availability: "",
-  experience_level: "",
-  languages: "",
-  technical_skills: "",
-  resume_path: "",
-  cover_letter: "",
-};
-
 export default function JobApplicationForm() {
   const searchParams = useSearchParams();
   const jobId = searchParams.get("jobId") || "";
   const jobTitle = searchParams.get("jobTitle") || "";
+
+  const initialForm = {
+    full_name: "",
+    email: "",
+    phone: "",
+    location: "",
+    availability: "",
+    experience_level: "",
+    languages: "",
+    technical_skills: "",
+    resume_path: "",
+    cover_letter: jobTitle ? `Applying for: ${jobTitle}\n\n` : "",
+  };
 
   const [formData, setFormData] = useState(initialForm);
   const [resumeFile, setResumeFile] = useState<File | null>(null);
@@ -106,17 +106,47 @@ export default function JobApplicationForm() {
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
             Careers
           </p>
-          <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl md:text-5xl">
-            Apply for customer service roles
-          </h1>
-          <p className="mt-4 text-lg leading-8 text-slate-600">
-            Join our global talent network and access remote customer support
-            opportunities across industries.
-          </p>
+          {jobTitle ? (
+            <>
+              <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl md:text-5xl">
+                Apply for this role
+              </h1>
+
+              <p className="mt-4 text-lg leading-8 text-slate-600">
+                Complete your application for this position. Our team will review your
+                submission and follow up if your profile matches the role requirements.
+              </p>
+            </>
+          ) : (
+            <>
+              <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl md:text-5xl">
+                Join our talent network
+              </h1>
+
+              <p className="mt-4 text-lg leading-8 text-slate-600">
+                Submit your application to be considered for current and future customer
+                support opportunities across our global network.
+              </p>
+            </>
+          )}
+
+          {!jobTitle && (
+            <div className="mt-6">
+              <a
+                href="/jobs"
+                className="inline-flex items-center rounded-lg border border-blue-600 px-5 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-50"
+              >
+                Browse open positions
+              </a>
+            </div>
+          )}
 
           {jobTitle && (
-            <div className="mt-6 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
-              You are applying for: <span className="font-semibold">{jobTitle}</span>
+            <div className="mt-6 rounded-2xl border border-blue-200 bg-blue-50 px-5 py-4 text-sm text-blue-900">
+              <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">
+                Applying for
+              </p>
+              <p className="mt-1 text-base font-semibold">{jobTitle}</p>
             </div>
           )}
         </div>
