@@ -37,6 +37,26 @@ type JobApplication = {
   cover_letter?: string | null;
 };
 
+type JobPosting = {
+  id: string;
+  created_at?: string | null;
+  title?: string | null;
+  slug?: string | null;
+  department?: string | null;
+  location?: string | null;
+  work_model?: string | null;
+  employment_type?: string | null;
+  salary_range?: string | null;
+  short_summary?: string | null;
+  description?: string | null;
+  responsibilities?: string | null;
+  requirements?: string | null;
+  preferred_qualifications?: string | null;
+  application_deadline?: string | null;
+  status?: string | null;
+  featured?: boolean | null;
+};
+
 type ContactMessage = {
   id: string;
   created_at?: string | null;
@@ -51,6 +71,7 @@ type Props = {
   employerRequests: EmployerRequest[];
   jobApplications: JobApplication[];
   contactMessages: ContactMessage[];
+  jobPostings: JobPosting[];
 };
 
 function formatDate(value?: string | null) {
@@ -121,10 +142,11 @@ export default function AdminDashboardClient({
   employerRequests,
   jobApplications,
   contactMessages,
+  jobPostings,
 }: Props) {
-  const [activeTab, setActiveTab] = useState<"employers" | "jobs" | "contacts">(
-    "employers"
-  );
+  const [activeTab, setActiveTab] = useState<
+    "postings" | "employers" | "jobs" | "contacts"
+  >("postings");
   const [query, setQuery] = useState("");
 
   const filteredEmployerRequests = useMemo(() => {
@@ -163,6 +185,25 @@ export default function AdminDashboardClient({
     );
   }, [jobApplications, query]);
 
+  const filteredJobPostings = useMemo(() => {
+    const q = query.toLowerCase().trim();
+    if (!q) return jobPostings;
+
+    return jobPostings.filter((item) =>
+      [
+        item.title,
+        item.slug,
+        item.department,
+        item.location,
+        item.work_model,
+        item.employment_type,
+        item.status,
+      ]
+        .filter(Boolean)
+        .some((value) => value!.toLowerCase().includes(q))
+    );
+  }, [jobPostings, query]);
+
   const filteredContactMessages = useMemo(() => {
     const q = query.toLowerCase().trim();
     if (!q) return contactMessages;
@@ -188,7 +229,8 @@ export default function AdminDashboardClient({
           Log Out
         </button>
       </div>
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+        <SummaryCard label="Job Postings" value={jobPostings.length} />
         <SummaryCard label="Employer Requests" value={employerRequests.length} />
         <SummaryCard label="Job Applications" value={jobApplications.length} />
         <SummaryCard label="Contact Messages" value={contactMessages.length} />
@@ -197,6 +239,12 @@ export default function AdminDashboardClient({
       <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap gap-3">
+            <TabButton
+              active={activeTab === "postings"}
+              onClick={() => setActiveTab("postings")}
+            >
+              Job Postings
+            </TabButton>
             <TabButton
               active={activeTab === "employers"}
               onClick={() => setActiveTab("employers")}
@@ -228,6 +276,82 @@ export default function AdminDashboardClient({
           </div>
         </div>
       </div>
+
+      {activeTab === "postings" && (
+        <section className="mt-8 grid gap-8">
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+            <div className="mb-6">
+              <h2 className="text-2xl font-semibold text-slate-900">
+                Job Postings
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Create and review open positions that will appear on the public jobs pages.
+              </p>
+            </div>
+
+            {/* Form will be inserted from page wrapper */}
+            <div id="job-posting-form-anchor" />
+          </div>
+
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+            <div className="mb-6">
+              <h3 className="text-xl font-semibold text-slate-900">
+                Existing Job Postings
+              </h3>
+            </div>
+
+            {filteredJobPostings.length === 0 ? (
+              <p className="text-sm text-slate-600">No matching job postings.</p>
+            ) : (
+              <div className="grid gap-4">
+                {filteredJobPostings.map((job) => (
+                  <div
+                    key={job.id}
+                    className="rounded-2xl border border-slate-200 bg-slate-50 p-5 shadow-sm"
+                  >
+                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                      <Field label="Title" value={job.title} />
+                      <Field label="Slug" value={job.slug} />
+                      <Field label="Department" value={job.department} />
+                      <Field label="Location" value={job.location} />
+                      <Field label="Work Model" value={job.work_model} />
+                      <Field label="Employment Type" value={job.employment_type} />
+                      <Field label="Salary Range" value={job.salary_range} />
+                      <Field label="Status" value={job.status} />
+                    </div>
+
+                    <div className="mt-5 grid gap-4 md:grid-cols-2">
+                      <Field label="Short Summary" value={job.short_summary} />
+                      <Field
+                        label="Application Deadline"
+                        value={job.application_deadline}
+                      />
+                    </div>
+
+                    <div className="mt-5 grid gap-4 md:grid-cols-2">
+                      <Field label="Description" value={job.description} />
+                      <Field label="Responsibilities" value={job.responsibilities} />
+                    </div>
+
+                    <div className="mt-5 grid gap-4 md:grid-cols-2">
+                      <Field label="Requirements" value={job.requirements} />
+                      <Field
+                        label="Preferred Qualifications"
+                        value={job.preferred_qualifications}
+                      />
+                    </div>
+
+                    <p className="mt-5 text-xs text-slate-500">
+                      Submitted: {formatDate(job.created_at)} · Featured: {" "}
+                      {job.featured ? "Yes" : "No"}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       {activeTab === "employers" && (
         <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">

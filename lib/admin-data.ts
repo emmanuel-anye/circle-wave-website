@@ -56,3 +56,33 @@ export async function getContactMessages() {
 
   return data ?? [];
 }
+
+export async function getJobPostings() {
+  const { data, error } = await supabase
+    .from("job_postings")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching job postings:", error);
+    return [];
+  }
+
+  return data ?? [];
+}
+
+export async function getPublicJobPostings() {
+  const { data, error } = await supabase
+    .from("job_postings")
+    .select("*")
+    .eq("status", "open")
+    .order("featured", { ascending: false })
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching public job postings:", error);
+    return [];
+  }
+
+  return data ?? [];
+}

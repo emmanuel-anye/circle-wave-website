@@ -3,10 +3,12 @@ import { redirect } from "next/navigation";
 import PageTransition from "@/components/ui/PageTransition";
 import Reveal from "@/components/ui/Reveal";
 import AdminDashboardClient from "@/components/admin/AdminDashboardClient";
+import AdminJobPostingForm from "@/components/admin/AdminJobPostingForm";
 import {
   getEmployerRequests,
   getJobApplications,
   getContactMessages,
+  getJobPostings,
 } from "@/lib/admin-data";
 
 export default async function AdminPage() {
@@ -17,11 +19,13 @@ export default async function AdminPage() {
     redirect("/admin/login");
   }
 
-  const [employerRequests, jobApplications, contactMessages] = await Promise.all([
-    getEmployerRequests(),
-    getJobApplications(),
-    getContactMessages(),
-  ]);
+  const [employerRequests, jobApplications, contactMessages, jobPostings] =
+    await Promise.all([
+      getEmployerRequests(),
+      getJobApplications(),
+      getContactMessages(),
+      getJobPostings(),
+    ]);
 
   return (
     <PageTransition>
@@ -35,15 +39,20 @@ export default async function AdminPage() {
               Submissions overview
             </h1>
             <p className="mt-4 text-lg leading-8 text-slate-600">
-              Review employer requests, job applications, and contact messages
-              submitted through the website.
+              Review employer requests, job applications, contact messages,
+              and manage open job postings.
             </p>
           </Reveal>
+
+          <div className="mt-10">
+            <AdminJobPostingForm />
+          </div>
 
           <AdminDashboardClient
             employerRequests={employerRequests}
             jobApplications={jobApplications}
             contactMessages={contactMessages}
+            jobPostings={jobPostings}
           />
         </div>
       </section>
