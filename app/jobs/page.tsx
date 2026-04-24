@@ -11,7 +11,7 @@ export default async function JobsPage() {
 
   return (
     <PageTransition>
-      <section className="bg-slate-50 py-20">
+      <section className="bg-slate-50 section">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <Reveal className="max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
@@ -49,9 +49,9 @@ export default async function JobsPage() {
               {jobs.map((job) => (
                 <StaggerItem key={job.id}>
                   <HoverCard
-                    className={`h-full rounded-3xl border p-8 shadow-sm ${
+                    className={`h-full rounded-[2rem] border p-8 shadow-sm transition-all duration-300 ${
                       job.featured
-                        ? "border-blue-200 bg-blue-50"
+                        ? "border-blue-200 bg-gradient-to-br from-blue-50 to-white shadow-blue-100/60"
                         : "border-slate-200 bg-white"
                     }`}
                   >

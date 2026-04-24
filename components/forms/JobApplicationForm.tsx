@@ -140,7 +140,7 @@ export default function JobApplicationForm() {
   }
 
   return (
-    <section className="bg-slate-50 py-20">
+    <section className="bg-slate-50 section">
       <div className="mx-auto max-w-5xl px-4 sm:px-6">
         <div className="mb-10 max-w-3xl">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
@@ -191,8 +191,8 @@ export default function JobApplicationForm() {
           )}
         </div>
 
-        <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-200/60">
-          <div className="border-b border-slate-200 bg-gradient-to-r from-blue-950 to-blue-700 px-6 py-6 text-white sm:px-8 sm:py-8">
+        <div className="form-card">
+          <div className="form-header">
             <h2 className="text-2xl font-semibold">Candidate Application</h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-blue-100">
               Complete the form below to be considered for current and upcoming
@@ -200,7 +200,7 @@ export default function JobApplicationForm() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="grid gap-8 px-6 py-6 sm:px-8 sm:py-8">
+          <form onSubmit={handleSubmit} className="form-body">
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
                 Personal Information

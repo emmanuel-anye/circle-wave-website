@@ -45,7 +45,7 @@ export default function Services() {
 
             return (
               <StaggerItem key={service.title}>
-                <HoverCard className="group rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                <HoverCard className="group rounded-3xl border border-slate-200 bg-white p-7 shadow-sm">
                   <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-blue-700 transition-transform duration-300 group-hover:scale-105 group-hover:rotate-2">
                     <Icon size={24} />
                   </div>

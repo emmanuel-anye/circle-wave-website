@@ -29,7 +29,7 @@ export default async function JobDetailPage({ params }: JobPageProps) {
 
   return (
     <PageTransition>
-      <section className="bg-slate-50 py-20">
+      <section className="bg-slate-50 section">
         <div className="mx-auto max-w-5xl px-4 sm:px-6">
           <Reveal className="max-w-4xl">
             <div className="flex flex-wrap items-center gap-3">
@@ -53,7 +53,7 @@ export default async function JobDetailPage({ params }: JobPageProps) {
               </p>
             )}
 
-            <div className="mt-8 grid gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-8 grid gap-4 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/50 sm:grid-cols-2 lg:grid-cols-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Department
@@ -117,12 +117,12 @@ export default async function JobDetailPage({ params }: JobPageProps) {
           </Reveal>
 
           <div className="mt-12 grid gap-8">
-            <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+            <div className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
               <h2 className="text-2xl font-semibold text-slate-900">Role Description</h2>
               <div className="mt-4 space-y-4">{formatMultiline(job.description)}</div>
             </div>
 
-            <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+            <div className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
               <h2 className="text-2xl font-semibold text-slate-900">Responsibilities</h2>
               <div className="mt-4 space-y-4">
                 {formatMultiline(job.responsibilities) || (
@@ -131,7 +131,7 @@ export default async function JobDetailPage({ params }: JobPageProps) {
               </div>
             </div>
 
-            <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+            <div className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
               <h2 className="text-2xl font-semibold text-slate-900">Requirements</h2>
               <div className="mt-4 space-y-4">
                 {formatMultiline(job.requirements) || (
@@ -140,7 +140,7 @@ export default async function JobDetailPage({ params }: JobPageProps) {
               </div>
             </div>
 
-            <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+            <div className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
               <h2 className="text-2xl font-semibold text-slate-900">
                 Preferred Qualifications
               </h2>

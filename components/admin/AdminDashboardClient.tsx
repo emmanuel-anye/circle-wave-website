@@ -106,7 +106,7 @@ function SummaryCard({
   value: number;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
       <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
         {label}
       </p>
@@ -237,7 +237,7 @@ export default function AdminDashboardClient({
         <SummaryCard label="Contact Messages" value={contactMessages.length} />
       </div>
 
-      <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+      <div className="mt-8 rounded-[2rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap gap-3">
             <TabButton
@@ -308,7 +308,7 @@ export default function AdminDashboardClient({
                 {filteredJobPostings.map((job) => (
                   <div
                     key={job.id}
-                    className="rounded-2xl border border-slate-200 bg-slate-50 p-5 shadow-sm"
+                    className="rounded-3xl border border-slate-200 bg-slate-50 p-5 shadow-sm"
                   >
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                       <Field label="Title" value={job.title} />
@@ -372,7 +372,7 @@ export default function AdminDashboardClient({
               {filteredEmployerRequests.map((request) => (
                 <div
                   key={request.id}
-                  className="rounded-2xl border border-slate-200 bg-slate-50 p-5 shadow-sm"
+                  className="rounded-3xl border border-slate-200 bg-slate-50 p-5 shadow-sm"
                 >
                   <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                     <Field label="Company" value={request.company_name} />
@@ -430,7 +430,7 @@ export default function AdminDashboardClient({
               {filteredJobApplications.map((application) => (
                 <div
                   key={application.id}
-                  className="rounded-2xl border border-slate-200 bg-slate-50 p-5 shadow-sm"
+                  className="rounded-3xl border border-slate-200 bg-slate-50 p-5 shadow-sm"
                 >
                   <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                     <Field label="Full Name" value={application.full_name} />
@@ -510,7 +510,7 @@ export default function AdminDashboardClient({
               {filteredContactMessages.map((message) => (
                 <div
                   key={message.id}
-                  className="rounded-2xl border border-slate-200 bg-slate-50 p-5 shadow-sm"
+                  className="rounded-3xl border border-slate-200 bg-slate-50 p-5 shadow-sm"
                 >
                   <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                     <Field label="Full Name" value={message.full_name} />

@@ -72,12 +72,12 @@ export default function ContactForm() {
 
   return (
     <Reveal>
-      <div className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
+      <div className="form-card">
         <h2 className="text-2xl font-semibold text-slate-900">
           Send us a message
         </h2>
 
-        <form onSubmit={handleSubmit} className="mt-6 grid gap-6">
+        <form onSubmit={handleSubmit} className="form-body mt-6">
         <div className="grid gap-6 md:grid-cols-2">
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-700">

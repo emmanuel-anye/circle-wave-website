@@ -5,7 +5,7 @@ import AdminLoginForm from "@/components/admin/AdminLoginForm";
 export default function AdminLoginPage() {
   return (
     <PageTransition>
-      <section className="bg-slate-50 py-20">
+      <section className="bg-slate-50 section">
         <div className="mx-auto max-w-2xl px-4 sm:px-6">
           <Reveal className="max-w-xl">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">

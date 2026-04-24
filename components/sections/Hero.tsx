@@ -57,11 +57,11 @@ export default function Hero() {
           <div className="relative overflow-hidden rounded-[2rem] border border-white/15 bg-white/10 shadow-2xl">
             <Image
               src="/images/hero-support.jpg"
-              alt="Customer support professional working with headset"
-              width={800}
-              height={600}
-              priority
-              className="h-[320px] w-full object-cover sm:h-[380px] lg:h-[460px]"
+               alt="Customer support professional working with headset"
+               width={1200}
+               height={900}
+               priority
+               className="h-[320px] w-full rounded-2xl object-cover shadow-lg sm:h-[380px] lg:h-[460px]"
             />
           </div>
 
