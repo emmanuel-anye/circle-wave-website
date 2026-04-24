@@ -6,6 +6,20 @@ import { supabase } from "@/lib/supabase";
 import { motion } from "framer-motion";
 import { buttonMotion } from "@/lib/motion";
 
+async function sendSubmissionNotification(type: string, data: Record<string, unknown>) {
+  try {
+    await fetch("/api/notify", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ type, data }),
+    });
+  } catch (error) {
+    console.error("Failed to send notification:", error);
+  }
+}
+
 export default function JobApplicationForm() {
   const searchParams = useSearchParams();
   const jobId = searchParams.get("jobId") || "";
@@ -85,6 +99,19 @@ export default function JobApplicationForm() {
       if (error) {
         throw error;
       }
+
+      await sendSubmissionNotification("job-application", {
+        full_name: formData.full_name,
+        email: formData.email,
+        phone: formData.phone,
+        location: formData.location,
+        availability: formData.availability,
+        experience_level: formData.experience_level,
+        languages: formData.languages,
+        technical_skills: formData.technical_skills,
+        applied_role: jobTitle || "General talent network",
+        resume_path: uploadedResumePath,
+      });
 
       setSuccess("Application submitted successfully.");
       setFormData(initialForm);

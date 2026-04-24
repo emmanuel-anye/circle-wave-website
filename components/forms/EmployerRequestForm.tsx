@@ -6,6 +6,20 @@ import { supabase } from "@/lib/supabase";
 import { buttonMotion } from "@/lib/motion";
 import Reveal from "@/components/ui/Reveal";
 
+async function sendSubmissionNotification(type: string, data: Record<string, unknown>) {
+  try {
+    await fetch("/api/notify", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ type, data }),
+    });
+  } catch (error) {
+    console.error("Failed to send notification:", error);
+  }
+}
+
 const initialForm = {
   company_name: "",
   contact_name: "",
@@ -50,6 +64,20 @@ export default function EmployerRequestForm() {
       setErrorMessage("Something went wrong. Please try again.");
       console.error(error);
     } else {
+      await sendSubmissionNotification("employer-request", {
+        company_name: formData.company_name,
+        contact_name: formData.contact_name,
+        email: formData.email,
+        phone: formData.phone,
+        industry: formData.industry,
+        headcount: formData.headcount,
+        engagement_type: formData.engagement_type,
+        work_model: formData.work_model,
+        duration: formData.duration,
+        location: formData.location,
+        job_roles: formData.job_roles,
+      });
+
       setSuccessMessage("Your staffing request has been submitted successfully.");
       setFormData(initialForm);
     }

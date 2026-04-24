@@ -6,6 +6,20 @@ import { supabase } from "@/lib/supabase";
 import { buttonMotion } from "@/lib/motion";
 import Reveal from "@/components/ui/Reveal";
 
+async function sendSubmissionNotification(type: string, data: Record<string, unknown>) {
+  try {
+    await fetch("/api/notify", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ type, data }),
+    });
+  } catch (error) {
+    console.error("Failed to send notification:", error);
+  }
+}
+
 const initialForm = {
   full_name: "",
   email: "",
@@ -41,6 +55,14 @@ export default function ContactForm() {
       setErrorMsg("Something went wrong. Please try again.");
       console.error(error);
     } else {
+      await sendSubmissionNotification("contact-message", {
+        full_name: formData.full_name,
+        email: formData.email,
+        company: formData.company,
+        subject: formData.subject,
+        message: formData.message,
+      });
+
       setSuccess("Message sent successfully.");
       setFormData(initialForm);
     }
