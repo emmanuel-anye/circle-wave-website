@@ -29,7 +29,7 @@ export default async function JobDetailPage({ params }: JobPageProps) {
 
   return (
     <PageTransition>
-      <section className="bg-slate-50 py-20">
+      <section className="bg-slate-50 section">
         <div className="mx-auto max-w-5xl px-4 sm:px-6">
           <Reveal className="max-w-4xl">
             <div className="flex flex-wrap items-center gap-3">

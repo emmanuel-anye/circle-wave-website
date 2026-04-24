@@ -86,7 +86,7 @@ export default function EmployerRequestForm() {
   }
 
   return (
-    <section className="bg-slate-50 py-20">
+    <section className="bg-slate-50 section">
       <div className="mx-auto max-w-5xl px-6">
         <div className="mb-10 max-w-3xl">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">

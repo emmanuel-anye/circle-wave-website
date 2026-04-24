@@ -11,7 +11,7 @@ export default async function JobsPage() {
 
   return (
     <PageTransition>
-      <section className="bg-slate-50 py-20">
+      <section className="bg-slate-50 section">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <Reveal className="max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">

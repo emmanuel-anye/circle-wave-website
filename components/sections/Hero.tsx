@@ -55,13 +55,10 @@ export default function Hero() {
         <div className="relative">
           <div className="absolute -inset-4 rounded-[2rem] bg-white/10 blur-2xl" />
           <div className="relative overflow-hidden rounded-[2rem] border border-white/15 bg-white/10 shadow-2xl">
-            <Image
-              src="/images/hero-support.jpg"
+            <img
+              src="/hero-support.jpg"
               alt="Customer support professional working with headset"
-              width={800}
-              height={600}
-              priority
-              className="h-[320px] w-full object-cover sm:h-[380px] lg:h-[460px]"
+              className="h-[320px] w-full object-cover sm:h-[380px] lg:h-[460px] rounded-2xl shadow-lg float"
             />
           </div>
 
