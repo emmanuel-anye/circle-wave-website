@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { sendApplicantConfirmation } from "@/lib/notifications";
 import { motion } from "framer-motion";
 import { buttonMotion } from "@/lib/motion";
 
@@ -99,6 +100,18 @@ export default function JobApplicationForm() {
       if (error) {
         throw error;
       }
+
+      await fetch("/api/confirm-application", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          name: formData.full_name,
+          jobTitle: jobTitle || null,
+        }),
+      });
 
       await sendSubmissionNotification("job-application", {
         full_name: formData.full_name,
