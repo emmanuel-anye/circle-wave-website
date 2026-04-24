@@ -102,8 +102,8 @@ export default function EmployerRequestForm() {
         </div>
 
         <Reveal>
-          <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-200/60">
-            <div className="border-b border-slate-200 bg-gradient-to-r from-blue-950 to-blue-700 px-6 py-6 sm:px-8 sm:py-8 text-white">
+          <div className="form-card">
+            <div className="form-header">
               <h2 className="text-2xl font-semibold">Staffing Request</h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-blue-100">
                 Share your staffing requirements, preferred engagement model, and
@@ -111,7 +111,7 @@ export default function EmployerRequestForm() {
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="grid gap-8 px-6 py-6 sm:px-8 sm:py-8">
+            <form onSubmit={handleSubmit} className="form-body">
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
                 Company Information

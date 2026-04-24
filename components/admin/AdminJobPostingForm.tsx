@@ -92,7 +92,7 @@ export default function AdminJobPostingForm() {
   }
 
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+    <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/50 sm:p-8">
       <div className="mb-6">
         <h2 className="text-2xl font-semibold text-slate-900">Create Job Posting</h2>
         <p className="mt-2 text-sm leading-6 text-slate-600">
