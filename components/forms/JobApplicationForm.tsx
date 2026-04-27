@@ -1,9 +1,9 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { sendApplicantConfirmation } from "@/lib/notifications";
 import { motion } from "framer-motion";
 import { buttonMotion } from "@/lib/motion";
 
@@ -146,12 +146,12 @@ export default function JobApplicationForm() {
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
             Careers
           </p>
+
           {jobTitle ? (
             <>
               <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl md:text-5xl">
                 Apply for this role
               </h1>
-
               <p className="mt-4 text-lg leading-8 text-slate-600">
                 Complete your application for this position. Our team will review your
                 submission and follow up if your profile matches the role requirements.
@@ -162,7 +162,6 @@ export default function JobApplicationForm() {
               <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl md:text-5xl">
                 Join our talent network
               </h1>
-
               <p className="mt-4 text-lg leading-8 text-slate-600">
                 Submit your application to be considered for current and future customer
                 support opportunities across our global network.
@@ -172,12 +171,12 @@ export default function JobApplicationForm() {
 
           {!jobTitle && (
             <div className="mt-6">
-              <a
+              <Link
                 href="/jobs"
                 className="inline-flex items-center rounded-lg border border-blue-600 px-5 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-50"
               >
                 Browse open positions
-              </a>
+              </Link>
             </div>
           )}
 
