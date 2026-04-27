@@ -1,4 +1,8 @@
-import { resend, RESEND_FROM_EMAIL, ADMIN_NOTIFICATION_EMAIL } from "@/lib/resend";
+import {
+  getResend,
+  RESEND_FROM_EMAIL,
+  ADMIN_NOTIFICATION_EMAIL,
+} from "@/lib/resend";
 
 type NotificationParams = {
   subject: string;
@@ -13,6 +17,8 @@ export async function sendAdminNotification({
     console.warn("RESEND_API_KEY is not set. Skipping email notification.");
     return;
   }
+
+  const resend = getResend();
 
   await resend.emails.send({
     from: RESEND_FROM_EMAIL,
@@ -38,6 +44,8 @@ export async function sendApplicantConfirmation({
     return;
   }
 
+  const resend = getResend();
+
   const subject = jobTitle
     ? `Your application for ${jobTitle}`
     : "Your application has been received";
@@ -52,7 +60,9 @@ export async function sendApplicantConfirmation({
 
       <p style="margin-bottom: 16px;">
         Thank you for applying ${
-          jobTitle ? `for the role of <strong>${jobTitle}</strong>` : "with Circle Wave"
+          jobTitle
+            ? `for the role of <strong>${jobTitle}</strong>`
+            : "with Circle Wave"
         }.
       </p>
 
