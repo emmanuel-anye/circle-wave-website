@@ -3,23 +3,8 @@
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
-import { supabase } from "@/lib/supabase";
 import { motion } from "framer-motion";
 import { buttonMotion } from "@/lib/motion";
-
-async function sendSubmissionNotification(type: string, data: Record<string, unknown>) {
-  try {
-    await fetch("/api/notify", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ type, data }),
-    });
-  } catch (error) {
-    console.error("Failed to send notification:", error);
-  }
-}
 
 export default function JobApplicationForm() {
   const searchParams = useSearchParams();
@@ -37,6 +22,7 @@ export default function JobApplicationForm() {
     technical_skills: "",
     resume_path: "",
     cover_letter: jobTitle ? `Applying for: ${jobTitle}\n\n` : "",
+    website: "",
   };
 
   const [formData, setFormData] = useState(initialForm);
@@ -57,24 +43,6 @@ export default function JobApplicationForm() {
     setResumeFile(file);
   }
 
-  async function uploadResume(file: File) {
-    const fileExt = file.name.split(".").pop();
-    const fileName = `${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
-    const filePath = fileExt ? fileName : `${fileName}.pdf`;
-
-    const { error } = await supabase.storage
-      .from("resumes")
-      .upload(filePath, file, {
-        upsert: false,
-      });
-
-    if (error) {
-      throw error;
-    }
-
-    return filePath;
-  }
-
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
@@ -86,45 +54,13 @@ export default function JobApplicationForm() {
         throw new Error("Please upload your resume.");
       }
 
-      const uploadedResumePath = await uploadResume(resumeFile);
-
-      const payload = {
-        ...formData,
-        resume_path: uploadedResumePath,
-        job_id: jobId || null,
-        job_title_snapshot: jobTitle || null,
-      };
-
-      const { error } = await supabase.from("job_applications").insert([payload]);
-
-      if (error) {
-        throw error;
-      }
-
-      await fetch("/api/confirm-application", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          name: formData.full_name,
-          jobTitle: jobTitle || null,
-        }),
-      });
-
-      await sendSubmissionNotification("job-application", {
-        full_name: formData.full_name,
-        email: formData.email,
-        phone: formData.phone,
-        location: formData.location,
-        availability: formData.availability,
-        experience_level: formData.experience_level,
-        languages: formData.languages,
-        technical_skills: formData.technical_skills,
-        applied_role: jobTitle || "General talent network",
-        resume_path: uploadedResumePath,
-      });
+      const payload = new FormData();
+      Object.entries(formData).forEach(([key, value]) => payload.set(key, value));
+      payload.set("job_id", jobId);
+      payload.set("resume", resumeFile);
+      const response = await fetch("/api/submissions/application", { method: "POST", body: payload });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Something went wrong.");
 
       setSuccess("Application submitted successfully.");
       setFormData(initialForm);
@@ -200,6 +136,7 @@ export default function JobApplicationForm() {
           </div>
 
           <form onSubmit={handleSubmit} className="form-body">
+            <input name="website" value={formData.website} onChange={handleChange} tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
                 Personal Information

@@ -2,23 +2,8 @@
 
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { supabase } from "@/lib/supabase";
 import { buttonMotion } from "@/lib/motion";
 import Reveal from "@/components/ui/Reveal";
-
-async function sendSubmissionNotification(type: string, data: Record<string, unknown>) {
-  try {
-    await fetch("/api/notify", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ type, data }),
-    });
-  } catch (error) {
-    console.error("Failed to send notification:", error);
-  }
-}
 
 const initialForm = {
   company_name: "",
@@ -34,6 +19,7 @@ const initialForm = {
   location: "",
   compliance_requirements: "",
   additional_notes: "",
+  website: "",
 };
 
 export default function EmployerRequestForm() {
@@ -58,31 +44,21 @@ export default function EmployerRequestForm() {
     setSuccessMessage("");
     setErrorMessage("");
 
-    const { error } = await supabase.from("employer_requests").insert([formData]);
-
-    if (error) {
-      setErrorMessage("Something went wrong. Please try again.");
-      console.error(error);
-    } else {
-      await sendSubmissionNotification("employer-request", {
-        company_name: formData.company_name,
-        contact_name: formData.contact_name,
-        email: formData.email,
-        phone: formData.phone,
-        industry: formData.industry,
-        headcount: formData.headcount,
-        engagement_type: formData.engagement_type,
-        work_model: formData.work_model,
-        duration: formData.duration,
-        location: formData.location,
-        job_roles: formData.job_roles,
+    try {
+      const response = await fetch("/api/submissions/employer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
       });
-
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Something went wrong.");
       setSuccessMessage("Your staffing request has been submitted successfully.");
       setFormData(initialForm);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   }
 
   return (
@@ -112,6 +88,7 @@ export default function EmployerRequestForm() {
             </div>
 
             <form onSubmit={handleSubmit} className="form-body">
+            <input name="website" value={formData.website} onChange={handleChange} tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
                 Company Information

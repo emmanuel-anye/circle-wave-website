@@ -2,23 +2,8 @@
 
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { supabase } from "@/lib/supabase";
 import { buttonMotion } from "@/lib/motion";
 import Reveal from "@/components/ui/Reveal";
-
-async function sendSubmissionNotification(type: string, data: Record<string, unknown>) {
-  try {
-    await fetch("/api/notify", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ type, data }),
-    });
-  } catch (error) {
-    console.error("Failed to send notification:", error);
-  }
-}
 
 const initialForm = {
   full_name: "",
@@ -26,6 +11,7 @@ const initialForm = {
   company: "",
   subject: "",
   message: "",
+  website: "",
 };
 
 export default function ContactForm() {
@@ -47,27 +33,21 @@ export default function ContactForm() {
     setSuccess("");
     setErrorMsg("");
 
-    const { error } = await supabase
-      .from("contact_messages")
-      .insert([formData]);
-
-    if (error) {
-      setErrorMsg("Something went wrong. Please try again.");
-      console.error(error);
-    } else {
-      await sendSubmissionNotification("contact-message", {
-        full_name: formData.full_name,
-        email: formData.email,
-        company: formData.company,
-        subject: formData.subject,
-        message: formData.message,
+    try {
+      const response = await fetch("/api/submissions/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
       });
-
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Something went wrong.");
       setSuccess("Message sent successfully.");
       setFormData(initialForm);
+    } catch (error) {
+      setErrorMsg(error instanceof Error ? error.message : "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   }
 
   return (
@@ -78,6 +58,7 @@ export default function ContactForm() {
         </h2>
 
         <form onSubmit={handleSubmit} className="form-body mt-6">
+        <input name="website" value={formData.website} onChange={handleChange} tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
         <div className="grid gap-6 md:grid-cols-2">
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-700">

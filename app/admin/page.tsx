@@ -1,4 +1,3 @@
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import PageTransition from "@/components/ui/PageTransition";
 import Reveal from "@/components/ui/Reveal";
@@ -10,12 +9,10 @@ import {
   getContactMessages,
   getJobPostings,
 } from "@/lib/admin-data";
+import { isAdminAuthenticated } from "@/lib/admin-auth";
 
 export default async function AdminPage() {
-  const cookieStore = await cookies();
-  const isAuthed = cookieStore.get("cw_admin_auth")?.value === "authenticated";
-
-  if (!isAuthed) {
+  if (!(await isAdminAuthenticated())) {
     redirect("/admin/login");
   }
 
