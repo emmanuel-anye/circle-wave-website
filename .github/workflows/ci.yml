@@ -24,3 +24,42 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ci-placeholder
           ADMIN_DASHBOARD_PASSWORD: ci-placeholder-password
           ADMIN_SESSION_SECRET: ci-placeholder-secret-at-least-32-characters
+
+  container:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build production image
+        run: |
+          docker build \
+            --build-arg NEXT_PUBLIC_SUPABASE_URL=https://example.supabase.co \
+            --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY=ci-placeholder \
+            --tag circle-wave:ci \
+            --file dockerfile \
+            .
+      - name: Smoke test production container
+        run: |
+          container_id="$(
+            docker run --detach \
+              --publish 3000:3000 \
+              --env SUPABASE_SERVICE_ROLE_KEY=ci-placeholder \
+              --env ADMIN_DASHBOARD_PASSWORD=ci-placeholder-password \
+              --env ADMIN_SESSION_SECRET=ci-placeholder-secret-at-least-32-characters \
+              circle-wave:ci
+          )"
+          trap 'docker logs "$container_id"; docker rm --force "$container_id"' EXIT
+
+          health_status=starting
+          for attempt in {1..30}; do
+            health_status="$(docker inspect --format '{{.State.Health.Status}}' "$container_id")"
+            if [ "$health_status" = healthy ]; then
+              break
+            fi
+            if [ "$health_status" = unhealthy ]; then
+              exit 1
+            fi
+            sleep 1
+          done
+
+          test "$health_status" = healthy
+          test "$(curl --fail --silent http://127.0.0.1:3000/api/health)" = '{"status":"ok"}'
