@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { sendAdminNotification } from "@/lib/notifications";
+import { isAdminAuthenticated } from "@/lib/admin-auth";
 
 export async function GET() {
+  if (!(await isAdminAuthenticated())) {
+    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  }
   try {
     await sendAdminNotification({
       subject: "Circle Wave test email",

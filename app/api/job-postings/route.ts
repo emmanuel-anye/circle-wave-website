@@ -1,17 +1,9 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-import { cookies } from "next/headers";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { isAdminAuthenticated } from "@/lib/admin-auth";
+import { getSupabaseAdmin } from "@/lib/supabase-server";
 
 export async function POST(request: Request) {
-  const cookieStore = await cookies();
-  const isAuthed = cookieStore.get("cw_admin_auth")?.value === "authenticated";
-
-  if (!isAuthed) {
+  if (!(await isAdminAuthenticated())) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
 
@@ -42,7 +34,7 @@ export async function POST(request: Request) {
     featured: Boolean(body.featured),
   };
 
-  const { error } = await supabase.from("job_postings").insert([payload]);
+  const { error } = await getSupabaseAdmin().from("job_postings").insert([payload]);
 
   if (error) {
     return NextResponse.json(

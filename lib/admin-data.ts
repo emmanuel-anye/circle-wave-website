@@ -1,19 +1,13 @@
-import { createClient } from "@supabase/supabase-js";
+import { getSupabaseAdmin, getSupabasePublic } from "@/lib/supabase-server";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-export function getResumePublicUrl(path?: string | null) {
+async function getResumeSignedUrl(path?: string | null) {
   if (!path) return null;
-
-  const { data } = supabase.storage.from("resumes").getPublicUrl(path);
-  return data.publicUrl;
+  const { data } = await getSupabaseAdmin().storage.from("resumes").createSignedUrl(path, 300);
+  return data?.signedUrl ?? null;
 }
 
 export async function getEmployerRequests() {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabaseAdmin()
     .from("employer_requests")
     .select("*")
     .order("created_at", { ascending: false });
@@ -27,7 +21,7 @@ export async function getEmployerRequests() {
 }
 
 export async function getJobApplications() {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabaseAdmin()
     .from("job_applications")
     .select("*")
     .order("created_at", { ascending: false });
@@ -37,14 +31,14 @@ export async function getJobApplications() {
     return [];
   }
 
-  return (data ?? []).map((item) => ({
+  return Promise.all((data ?? []).map(async (item) => ({
     ...item,
-    resume_url: getResumePublicUrl(item.resume_path),
-  }));
+    resume_url: await getResumeSignedUrl(item.resume_path),
+  })));
 }
 
 export async function getContactMessages() {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabaseAdmin()
     .from("contact_messages")
     .select("*")
     .order("created_at", { ascending: false });
@@ -58,7 +52,7 @@ export async function getContactMessages() {
 }
 
 export async function getJobPostings() {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabaseAdmin()
     .from("job_postings")
     .select("*")
     .order("created_at", { ascending: false });
@@ -72,10 +66,12 @@ export async function getJobPostings() {
 }
 
 export async function getPublicJobPostings() {
-  const { data, error } = await supabase
+  const today = new Date().toISOString().slice(0, 10);
+  const { data, error } = await getSupabasePublic()
     .from("job_postings")
     .select("*")
     .eq("status", "open")
+    .or(`application_deadline.is.null,application_deadline.gte.${today}`)
     .order("featured", { ascending: false })
     .order("created_at", { ascending: false });
 
@@ -88,11 +84,13 @@ export async function getPublicJobPostings() {
 }
 
 export async function getPublicJobBySlug(slug: string) {
-  const { data, error } = await supabase
+  const today = new Date().toISOString().slice(0, 10);
+  const { data, error } = await getSupabasePublic()
     .from("job_postings")
     .select("*")
     .eq("slug", slug)
     .eq("status", "open")
+    .or(`application_deadline.is.null,application_deadline.gte.${today}`)
     .maybeSingle();
 
   if (error) {
