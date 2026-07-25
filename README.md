@@ -20,9 +20,17 @@ cryptographically secure password generator (32 bytes or longer).
 npm run lint
 npm run typecheck
 npm run build
+docker build \
+  --build-arg NEXT_PUBLIC_SUPABASE_URL=https://example.supabase.co \
+  --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY=local-placeholder \
+  --tag circle-wave:local \
+  --file dockerfile \
+  .
 ```
 
-Pull requests run the same checks through `.github/workflows/ci.yml`.
+Pull requests run the same checks and smoke-test the production container through
+`.github/workflows/ci.yml`. The container exposes `/api/health` and includes a
+Docker health check for that endpoint.
 
 ## Production checklist
 
