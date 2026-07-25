@@ -20,7 +20,7 @@ export async function POST(request: Request) {
   if (
     typeof password !== "string" ||
     !expectedPassword ||
-    !passwordsMatch(password, expectedPassword)
+    !(await passwordsMatch(password, expectedPassword))
   ) {
     return NextResponse.json(
       { error: "Invalid password." },
