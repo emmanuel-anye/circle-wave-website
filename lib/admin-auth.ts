@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { createHmac, scrypt, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 
 export const ADMIN_COOKIE_NAME = "cw_admin_auth";
@@ -18,13 +18,23 @@ function sign(payload: string) {
   return createHmac("sha256", getSessionSecret()).update(payload).digest("base64url");
 }
 
-export function passwordsMatch(candidate: string, expected: string) {
-  const candidateHash = createHmac("sha256", getSessionSecret())
-    .update(candidate)
-    .digest();
-  const expectedHash = createHmac("sha256", getSessionSecret())
-    .update(expected)
-    .digest();
+function derivePasswordKey(password: string) {
+  return new Promise<Buffer>((resolve, reject) => {
+    scrypt(password, getSessionSecret(), 64, (error, derivedKey) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+      resolve(derivedKey);
+    });
+  });
+}
+
+export async function passwordsMatch(candidate: string, expected: string) {
+  const [candidateHash, expectedHash] = await Promise.all([
+    derivePasswordKey(candidate),
+    derivePasswordKey(expected),
+  ]);
   return timingSafeEqual(candidateHash, expectedHash);
 }
 
