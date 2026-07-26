@@ -37,6 +37,25 @@ export async function getJobApplications() {
   })));
 }
 
+export async function getTalentNetworkRegistrations() {
+  const { data, error } = await getSupabaseAdmin()
+    .from("talent_network_registrations")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching talent network registrations:", error);
+    return [];
+  }
+
+  return Promise.all(
+    (data ?? []).map(async (item) => ({
+      ...item,
+      resume_url: await getResumeSignedUrl(item.resume_path),
+    }))
+  );
+}
+
 export async function getContactMessages() {
   const { data, error } = await getSupabaseAdmin()
     .from("contact_messages")
@@ -95,6 +114,24 @@ export async function getPublicJobBySlug(slug: string) {
 
   if (error) {
     console.error("Error fetching job by slug:", error);
+    return null;
+  }
+
+  return data;
+}
+
+export async function getPublicJobById(id: string) {
+  const today = new Date().toISOString().slice(0, 10);
+  const { data, error } = await getSupabasePublic()
+    .from("job_postings")
+    .select("*")
+    .eq("id", id)
+    .eq("status", "open")
+    .or(`application_deadline.is.null,application_deadline.gte.${today}`)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Error fetching job by id:", error);
     return null;
   }
 

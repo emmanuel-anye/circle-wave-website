@@ -1,13 +1,28 @@
-import { Suspense } from "react";
 import PageTransition from "@/components/ui/PageTransition";
 import JobApplicationForm from "@/components/forms/JobApplicationForm";
+import { z } from "zod";
+import { getPublicJobById } from "@/lib/admin-data";
+import type { JobPosting } from "@/lib/jobs";
 
-export default function CareersPage() {
+type CareersPageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function CareersPage({
+  searchParams,
+}: CareersPageProps) {
+  const rawJobId = (await searchParams).jobId;
+  const jobId = (Array.isArray(rawJobId) ? rawJobId[0] : rawJobId)?.trim() ?? "";
+  const job = z.uuid().safeParse(jobId).success
+    ? ((await getPublicJobById(jobId)) as JobPosting | null)
+    : null;
+
   return (
     <PageTransition>
-      <Suspense fallback={<div className="min-h-screen p-8">Loading application form...</div>}>
-        <JobApplicationForm />
-      </Suspense>
+      <JobApplicationForm
+        jobId={job?.id ?? ""}
+        jobTitle={job?.title?.trim() ?? ""}
+      />
     </PageTransition>
   );
 }

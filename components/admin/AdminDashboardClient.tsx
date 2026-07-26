@@ -40,6 +40,28 @@ type JobApplication = {
   resume_url?: string | null;
   cover_letter?: string | null;
   job_title_snapshot?: string | null;
+  application_reference?: string | null;
+};
+
+type TalentNetworkRegistration = {
+  id: string;
+  created_at?: string | null;
+  full_name?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  target_roles?: string | null;
+  core_skills?: string | null;
+  location?: string | null;
+  work_preference?: string | null;
+  relocation_preference?: string | null;
+  work_authorization?: string | null;
+  availability?: string | null;
+  salary_expectations?: string | null;
+  consent?: boolean | null;
+  registration_reference?: string | null;
+  status?: string | null;
+  resume_path?: string | null;
+  resume_url?: string | null;
 };
 
 type JobPosting = {
@@ -48,6 +70,7 @@ type JobPosting = {
   title?: string | null;
   slug?: string | null;
   department?: string | null;
+  industry?: string | null;
   location?: string | null;
   work_model?: string | null;
   employment_type?: string | null;
@@ -75,6 +98,7 @@ type ContactMessage = {
 type Props = {
   employerRequests: EmployerRequest[];
   jobApplications: JobApplication[];
+  talentNetworkRegistrations: TalentNetworkRegistration[];
   contactMessages: ContactMessage[];
   jobPostings: JobPosting[];
 };
@@ -146,11 +170,12 @@ function TabButton({
 export default function AdminDashboardClient({
   employerRequests,
   jobApplications,
+  talentNetworkRegistrations,
   contactMessages,
   jobPostings,
 }: Props) {
   const [activeTab, setActiveTab] = useState<
-    "postings" | "employers" | "jobs" | "contacts"
+    "postings" | "employers" | "jobs" | "talent" | "contacts"
   >("postings");
   const [query, setQuery] = useState("");
 
@@ -191,6 +216,24 @@ export default function AdminDashboardClient({
         .some((value) => value!.toLowerCase().includes(q))
     );
   }, [jobApplications, query]);
+
+  const filteredTalentNetworkRegistrations = useMemo(() => {
+    const q = query.toLowerCase().trim();
+    if (!q) return talentNetworkRegistrations;
+
+    return talentNetworkRegistrations.filter((item) =>
+      [
+        item.full_name,
+        item.email,
+        item.location,
+        item.target_roles,
+        item.core_skills,
+        item.registration_reference,
+      ]
+        .filter(Boolean)
+        .some((value) => value!.toLowerCase().includes(q))
+    );
+  }, [query, talentNetworkRegistrations]);
 
   const filteredJobPostings = useMemo(() => {
     const q = query.toLowerCase().trim();
@@ -236,10 +279,14 @@ export default function AdminDashboardClient({
           Log Out
         </button>
       </div>
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-5">
         <SummaryCard label="Job Postings" value={jobPostings.length} />
         <SummaryCard label="Employer Requests" value={employerRequests.length} />
         <SummaryCard label="Job Applications" value={jobApplications.length} />
+        <SummaryCard
+          label="Talent Network"
+          value={talentNetworkRegistrations.length}
+        />
         <SummaryCard label="Contact Messages" value={contactMessages.length} />
       </div>
 
@@ -263,6 +310,12 @@ export default function AdminDashboardClient({
               onClick={() => setActiveTab("jobs")}
             >
               Job Applications
+            </TabButton>
+            <TabButton
+              active={activeTab === "talent"}
+              onClick={() => setActiveTab("talent")}
+            >
+              Talent Network
             </TabButton>
             <TabButton
               active={activeTab === "contacts"}
@@ -320,6 +373,7 @@ export default function AdminDashboardClient({
                       <Field label="Title" value={job.title} />
                       <Field label="Slug" value={job.slug} />
                       <Field label="Department" value={job.department} />
+                      <Field label="Industry" value={job.industry} />
                       <Field label="Location" value={job.location} />
                       <Field label="Work Model" value={job.work_model} />
                       <Field label="Employment Type" value={job.employment_type} />
@@ -451,6 +505,10 @@ export default function AdminDashboardClient({
                   <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                     <Field label="Full Name" value={application.full_name} />
                     <Field label="Applied Role" value={application.job_title_snapshot} />
+                    <Field
+                      label="Application Reference"
+                      value={application.application_reference}
+                    />
                     <Field label="Email" value={application.email} />
                     <Field label="Phone" value={application.phone} />
                     <Field label="Location" value={application.location} />
@@ -500,6 +558,94 @@ export default function AdminDashboardClient({
 
                   <p className="mt-5 text-xs text-slate-500">
                     Submitted: {formatDate(application.created_at)}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {activeTab === "talent" && (
+        <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+          <div className="mb-6">
+            <h2 className="text-2xl font-semibold text-slate-900">
+              Talent Network
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              Private candidate profiles submitted for future recruitment
+              consideration.
+            </p>
+          </div>
+
+          {filteredTalentNetworkRegistrations.length === 0 ? (
+            <p className="text-sm text-slate-600">
+              No matching talent network registrations.
+            </p>
+          ) : (
+            <div className="grid gap-4">
+              {filteredTalentNetworkRegistrations.map((registration) => (
+                <div
+                  key={registration.id}
+                  className="rounded-3xl border border-slate-200 bg-slate-50 p-5 shadow-sm"
+                >
+                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                    <Field label="Name" value={registration.full_name} />
+                    <Field label="Email" value={registration.email} />
+                    <Field label="Phone" value={registration.phone} />
+                    <Field label="Location" value={registration.location} />
+                    <Field
+                      label="Reference"
+                      value={registration.registration_reference}
+                    />
+                    <Field label="Status" value={registration.status} />
+                    <Field
+                      label="Work Preference"
+                      value={registration.work_preference}
+                    />
+                    <Field
+                      label="Relocation"
+                      value={registration.relocation_preference}
+                    />
+                    <Field
+                      label="Availability"
+                      value={registration.availability}
+                    />
+                    <Field
+                      label="Salary Expectations"
+                      value={registration.salary_expectations}
+                    />
+                  </div>
+
+                  <div className="mt-5 grid gap-4 md:grid-cols-2">
+                    <Field label="Target Roles" value={registration.target_roles} />
+                    <Field label="Core Skills" value={registration.core_skills} />
+                    <Field
+                      label="Work Authorization"
+                      value={registration.work_authorization}
+                    />
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        Résumé
+                      </p>
+                      {registration.resume_url ? (
+                        <a
+                          href={registration.resume_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="mt-1 inline-block text-sm text-blue-600 hover:text-blue-700"
+                        >
+                          Open private résumé
+                        </a>
+                      ) : (
+                        <p className="mt-1 text-sm text-slate-700">—</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <p className="mt-5 text-xs text-slate-500">
+                    Submitted: {formatDate(registration.created_at)} · Consent:{" "}
+                    {registration.consent ? "Yes" : "No"}
                   </p>
                 </div>
               ))}

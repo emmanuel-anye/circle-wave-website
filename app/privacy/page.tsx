@@ -24,10 +24,10 @@ export default function PrivacyPage() {
                 </h2>
                 <p className="mt-4 leading-8">
                   Circle Wave may collect information submitted through employer
-                  request forms, job applications, contact forms, and direct
-                  communication channels. This may include names, business details,
-                  contact information, staffing needs, resumes, and application
-                  details.
+                  request forms, job applications, talent-network registrations,
+                  contact forms, and direct communication channels. This may
+                  include names, business details, contact information, staffing
+                  needs, recruitment preferences, résumés, and application details.
                 </p>
               </div>
 
@@ -37,8 +37,10 @@ export default function PrivacyPage() {
                 </h2>
                 <p className="mt-4 leading-8">
                   We use submitted information to evaluate staffing requests,
-                  process job applications, communicate with clients and candidates,
-                  improve our services, and maintain business operations.
+                  process job applications, review consented talent profiles,
+                  communicate with clients and candidates, improve our services,
+                  and maintain business operations. Talent-network consent does
+                  not automatically subscribe a candidate to job-alert emails.
                 </p>
               </div>
 

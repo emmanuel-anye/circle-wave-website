@@ -1,79 +1,193 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useState } from "react";
 import { motion } from "framer-motion";
-import { buttonMotion } from "@/lib/motion";
+import { useEffect, useRef, useState } from "react";
 import FormStatus from "@/components/ui/FormStatus";
+import { trackConversion } from "@/lib/analytics";
+import { buttonMotion } from "@/lib/motion";
 
-export default function JobApplicationForm() {
-  const searchParams = useSearchParams();
-  const jobId = searchParams.get("jobId") || "";
-  const jobTitle = searchParams.get("jobTitle") || "";
+const emptyForm = {
+  full_name: "",
+  email: "",
+  phone: "",
+  location: "",
+  availability: "",
+  experience_level: "",
+  languages: "",
+  technical_skills: "",
+  cover_letter: "",
+  website: "",
+};
 
-  const initialForm = {
-    full_name: "",
-    email: "",
-    phone: "",
-    location: "",
-    availability: "",
-    experience_level: "",
-    languages: "",
-    technical_skills: "",
-    resume_path: "",
-    cover_letter: jobTitle ? `Applying for: ${jobTitle}\n\n` : "",
-    website: "",
-  };
+const steps = ["Your details", "Work profile", "Résumé and review"];
 
-  const [formData, setFormData] = useState(initialForm);
+export default function JobApplicationForm({
+  jobId,
+  jobTitle,
+}: {
+  jobId: string;
+  jobTitle: string;
+}) {
+  const [formData, setFormData] = useState(emptyForm);
   const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState("");
-  const [errorMsg, setErrorMsg] = useState("");
+  const [reference, setReference] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const formRef = useRef<HTMLFormElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const hasStarted = useRef(false);
+  const submissionInFlight = useRef(false);
+  const submissionToken = useRef("");
+  const stepHeadingRef = useRef<HTMLHeadingElement>(null);
+  const hasMounted = useRef(false);
+
+  useEffect(() => {
+    if (hasMounted.current) {
+      stepHeadingRef.current?.focus();
+    } else {
+      hasMounted.current = true;
+    }
+  }, [currentStep]);
+
+  function handleStart() {
+    if (hasStarted.current) return;
+    hasStarted.current = true;
+    trackConversion({
+      name: "application_started",
+      properties: { has_job: Boolean(jobId) },
+    });
+  }
 
   function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    event: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const { name, value } = event.target;
+    setFormData((previous) => ({ ...previous, [name]: value }));
   }
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0] ?? null;
-    setResumeFile(file);
+  function continueToNextStep() {
+    const controls = formRef.current?.querySelectorAll<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >(`[data-step="${currentStep}"] input, [data-step="${currentStep}"] textarea, [data-step="${currentStep}"] select`);
+
+    for (const control of controls ?? []) {
+      if (!control.checkValidity()) {
+        control.reportValidity();
+        control.focus();
+        return;
+      }
+    }
+
+    setErrorMessage("");
+    setCurrentStep((step) => Math.min(step + 1, steps.length - 1));
   }
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (currentStep < steps.length - 1) {
+      continueToNextStep();
+      return;
+    }
+    if (submissionInFlight.current) return;
+
+    if (!resumeFile) {
+      setErrorMessage("Please upload your résumé.");
+      fileInputRef.current?.focus();
+      return;
+    }
+
+    submissionInFlight.current = true;
     setLoading(true);
-    setSuccess("");
-    setErrorMsg("");
+    setErrorMessage("");
 
     try {
-      if (!resumeFile) {
-        throw new Error("Please upload your resume.");
-      }
-
       const payload = new FormData();
       Object.entries(formData).forEach(([key, value]) => payload.set(key, value));
       payload.set("job_id", jobId);
+      if (!submissionToken.current) {
+        submissionToken.current = crypto.randomUUID();
+      }
+      payload.set("submission_token", submissionToken.current);
       payload.set("resume", resumeFile);
-      const response = await fetch("/api/submissions/application", { method: "POST", body: payload });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Something went wrong.");
 
-      setSuccess("Application submitted successfully.");
-      setFormData(initialForm);
+      const response = await fetch("/api/submissions/application", {
+        method: "POST",
+        body: payload,
+      });
+      const result = await response.json().catch(() => null);
+      if (!response.ok) {
+        throw new Error(result?.error || "Unable to submit the application.");
+      }
+
+      setReference(result.reference);
+      trackConversion({
+        name: "application_completed",
+        properties: { has_job: true },
+      });
+      setFormData(emptyForm);
       setResumeFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (error) {
-      console.error(error);
-      setErrorMsg(
-        error instanceof Error ? error.message : "Something went wrong. Please try again."
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Unable to submit the application. Please try again."
       );
     } finally {
+      submissionInFlight.current = false;
       setLoading(false);
     }
+  }
+
+  if (!jobId) {
+    return (
+      <CandidateChoice
+        title="Choose your next step"
+        description="Applications must be connected to an open position. Browse current roles or register your profile for future relevant opportunities."
+      />
+    );
+  }
+
+  if (reference) {
+    return (
+      <section className="bg-slate-50 section">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6">
+          <div className="rounded-[2rem] border border-emerald-200 bg-white p-8 shadow-sm">
+            <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700">
+              Application received
+            </p>
+            <h1 className="mt-3 text-3xl font-bold text-slate-900">
+              Thank you for applying
+            </h1>
+            <p className="mt-4 leading-7 text-slate-600">
+              Save this non-sensitive reference if you contact Circle Wave about
+              your submission.
+            </p>
+            <p className="mt-5 rounded-xl bg-slate-100 px-5 py-4 font-mono text-lg font-semibold text-slate-900">
+              {reference}
+            </p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <Link
+                href="/jobs"
+                className="inline-flex min-h-12 items-center justify-center rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700"
+              >
+                Browse other roles
+              </Link>
+              <Link
+                href="/"
+                className="inline-flex min-h-12 items-center justify-center rounded-xl border border-slate-300 px-6 py-3 font-semibold text-slate-900 hover:bg-slate-50"
+              >
+                Return home
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
   }
 
   return (
@@ -81,142 +195,135 @@ export default function JobApplicationForm() {
       <div className="mx-auto max-w-5xl px-4 sm:px-6">
         <div className="mb-10 max-w-3xl">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
-            Careers
+            Candidate application
           </p>
-
-          {jobTitle ? (
-            <>
-              <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl md:text-5xl">
-                Apply for this role
-              </h1>
-              <p className="mt-4 text-lg leading-8 text-slate-600">
-                Complete your application for this position. Our team will review your
-                submission and follow up if your profile matches the role requirements.
-              </p>
-            </>
-          ) : (
-            <>
-              <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl md:text-5xl">
-                Join our talent network
-              </h1>
-              <p className="mt-4 text-lg leading-8 text-slate-600">
-                Submit your application to be considered for current and future customer
-                support opportunities across our global network.
-              </p>
-            </>
-          )}
-
-          {!jobTitle && (
-            <div className="mt-6">
-              <Link
-                href="/jobs"
-                className="inline-flex items-center rounded-lg border border-blue-600 px-5 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-50"
-              >
-                Browse open positions
-              </Link>
-            </div>
-          )}
-
+          <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl md:text-5xl">
+            Apply for this role
+          </h1>
+          <p className="mt-4 text-lg leading-8 text-slate-600">
+            Complete the three steps below. Your résumé is uploaded privately and
+            is available only through authorized administrative access.
+          </p>
           {jobTitle && (
-            <div className="mt-6 rounded-2xl border border-blue-200 bg-blue-50 px-5 py-4 text-sm text-blue-900">
-              <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">
+            <div className="mt-6 rounded-2xl border border-blue-200 bg-blue-50 px-5 py-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">
                 Applying for
               </p>
-              <p className="mt-1 text-base font-semibold">{jobTitle}</p>
+              <p className="mt-1 font-semibold text-blue-950">{jobTitle}</p>
             </div>
           )}
         </div>
 
+        <nav aria-label="Application progress" className="mb-8">
+          <p className="mb-3 text-sm font-semibold text-slate-700">
+            Step {currentStep + 1} of {steps.length}
+          </p>
+          <ol className="grid gap-3 sm:grid-cols-3">
+            {steps.map((step, index) => (
+              <li
+                key={step}
+                aria-current={index === currentStep ? "step" : undefined}
+                className={`rounded-xl border px-4 py-3 text-sm font-semibold ${
+                  index === currentStep
+                    ? "border-blue-600 bg-blue-50 text-blue-900"
+                    : index < currentStep
+                      ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                      : "border-slate-200 bg-white text-slate-500"
+                }`}
+              >
+                {index + 1}. {step}
+              </li>
+            ))}
+          </ol>
+        </nav>
+
         <div className="form-card">
           <div className="form-header">
-            <h2 className="text-2xl font-semibold">Candidate Application</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-blue-100">
-              Complete the form below to be considered for current and upcoming
-              customer support opportunities.
+            <h2
+              ref={stepHeadingRef}
+              tabIndex={-1}
+              className="text-2xl font-semibold focus:outline-none"
+            >
+              {steps[currentStep]}
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-blue-100">
+              Required fields are marked. Do not include sensitive personal
+              information beyond what this application requests.
             </p>
           </div>
 
           <form
+            ref={formRef}
             onSubmit={handleSubmit}
+            onFocus={handleStart}
             className="form-body"
             aria-busy={loading}
           >
-            <input name="website" value={formData.website} onChange={handleChange} tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
-            <div>
-              <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
-                Personal Information
-              </h3>
-              <div className="mt-4 grid gap-6 md:grid-cols-2">
-                <div>
-                  <label htmlFor="full_name" className="mb-2 block text-sm font-medium text-slate-700">
-                    Full Name
-                  </label>
+            <input
+              name="website"
+              value={formData.website}
+              onChange={handleChange}
+              tabIndex={-1}
+              autoComplete="off"
+              className="hidden"
+              aria-hidden="true"
+            />
+
+            {currentStep === 0 && (
+              <fieldset data-step="0" className="grid gap-6 md:grid-cols-2">
+                <legend className="sr-only">Your details</legend>
+                <Field label="Full name" id="full_name" required>
                   <input
                     id="full_name"
                     name="full_name"
-                    placeholder="Enter your full name"
                     value={formData.full_name}
                     onChange={handleChange}
                     required
+                    autoComplete="name"
                     className="input"
                   />
-                </div>
-
-                <div>
-                  <label htmlFor="email" className="mb-2 block text-sm font-medium text-slate-700">
-                    Email Address
-                  </label>
+                </Field>
+                <Field label="Email address" id="email" required>
                   <input
                     id="email"
                     name="email"
-                    placeholder="Enter your email address"
                     type="email"
                     value={formData.email}
                     onChange={handleChange}
                     required
+                    autoComplete="email"
                     className="input"
                   />
-                </div>
-
-                <div>
-                  <label htmlFor="phone" className="mb-2 block text-sm font-medium text-slate-700">
-                    Phone Number
-                  </label>
+                </Field>
+                <Field label="Phone number" id="phone">
                   <input
                     id="phone"
                     name="phone"
-                    placeholder="Enter your phone number"
+                    type="tel"
                     value={formData.phone}
                     onChange={handleChange}
+                    autoComplete="tel"
                     className="input"
                   />
-                </div>
-
-                <div>
-                  <label htmlFor="location" className="mb-2 block text-sm font-medium text-slate-700">
-                    Location
-                  </label>
+                </Field>
+                <Field label="Location" id="location">
                   <input
                     id="location"
                     name="location"
-                    placeholder="City, Country"
                     value={formData.location}
                     onChange={handleChange}
+                    autoComplete="address-level2"
+                    placeholder="City, country"
                     className="input"
                   />
-                </div>
-              </div>
-            </div>
+                </Field>
+              </fieldset>
+            )}
 
-            <div>
-              <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
-                Work Profile
-              </h3>
-              <div className="mt-4 grid gap-6 md:grid-cols-2">
-                <div>
-                  <label htmlFor="availability" className="mb-2 block text-sm font-medium text-slate-700">
-                    Availability
-                  </label>
+            {currentStep === 1 && (
+              <fieldset data-step="1" className="grid gap-6 md:grid-cols-2">
+                <legend className="sr-only">Work profile</legend>
+                <Field label="Availability" id="availability" required>
                   <select
                     id="availability"
                     name="availability"
@@ -230,15 +337,8 @@ export default function JobApplicationForm() {
                     <option value="Part-time">Part-time</option>
                     <option value="Contract">Contract</option>
                   </select>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="experience_level"
-                    className="mb-2 block text-sm font-medium text-slate-700"
-                  >
-                    Experience Level
-                  </label>
+                </Field>
+                <Field label="Experience level" id="experience_level" required>
                   <select
                     id="experience_level"
                     name="experience_level"
@@ -252,100 +352,161 @@ export default function JobApplicationForm() {
                     <option value="Mid">Mid</option>
                     <option value="Senior">Senior</option>
                   </select>
-                </div>
-
-                <div>
-                  <label htmlFor="languages" className="mb-2 block text-sm font-medium text-slate-700">
-                    Languages
-                  </label>
+                </Field>
+                <Field label="Languages" id="languages">
                   <input
                     id="languages"
                     name="languages"
-                    placeholder="e.g. English, French"
                     value={formData.languages}
                     onChange={handleChange}
+                    placeholder="For example: English, French"
                     className="input"
                   />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="technical_skills"
-                    className="mb-2 block text-sm font-medium text-slate-700"
-                  >
-                    Technical Skills
-                  </label>
+                </Field>
+                <Field label="Core skills" id="technical_skills">
                   <input
                     id="technical_skills"
                     name="technical_skills"
-                    placeholder="CRM, Zendesk, Excel, etc."
                     value={formData.technical_skills}
                     onChange={handleChange}
+                    placeholder="For example: CRM, quality assurance"
                     className="input"
                   />
-                </div>
-              </div>
-            </div>
+                </Field>
+              </fieldset>
+            )}
 
-            <div>
-              <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
-                Application Details
-              </h3>
-              <div className="mt-4 grid gap-6">
-                <div>
-                  <label htmlFor="resume" className="mb-2 block text-sm font-medium text-slate-700">
-                    Resume Upload
-                  </label>
-                  <input
-                    id="resume"
-                    type="file"
-                    accept=".pdf,.doc,.docx"
-                    onChange={handleFileChange}
-                    required
-                    className="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-700 file:mr-4 file:rounded-lg file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:font-medium file:text-blue-700 hover:file:bg-blue-100"
-                  />
-                  <p className="mt-2 text-sm text-slate-500">
-                    Accepted formats: PDF, DOC, DOCX
-                  </p>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="cover_letter"
-                    className="mb-2 block text-sm font-medium text-slate-700"
-                  >
-                    Cover Letter
-                  </label>
+            {currentStep === 2 && (
+              <fieldset data-step="2" className="grid gap-6">
+                <legend className="sr-only">Résumé and review</legend>
+                <Field label="Résumé" id="resume" required>
+                  <>
+                    <input
+                      ref={fileInputRef}
+                      id="resume"
+                      type="file"
+                      accept=".pdf,.doc,.docx"
+                      onChange={(event) =>
+                        setResumeFile(event.target.files?.[0] ?? null)
+                      }
+                      required
+                      className="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-700 file:mr-4 file:rounded-lg file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:font-medium file:text-blue-700"
+                    />
+                    <p className="mt-2 text-sm text-slate-500">
+                      PDF, DOC, or DOCX; maximum 5 MB.
+                    </p>
+                  </>
+                </Field>
+                <Field label="Cover letter" id="cover_letter">
                   <textarea
                     id="cover_letter"
                     name="cover_letter"
-                    placeholder="Tell us about your experience, strengths, and why you'd be a good fit."
                     value={formData.cover_letter}
                     onChange={handleChange}
                     rows={6}
                     className="input min-h-[180px] resize-y"
+                    placeholder="Explain your relevant experience and interest in this role."
                   />
-                </div>
-              </div>
-            </div>
+                </Field>
+              </fieldset>
+            )}
 
             <div className="flex flex-col gap-4 border-t border-slate-200 pt-6">
-              <motion.button
-                type="submit"
-                disabled={loading}
-                initial="rest"
-                animate="rest"
-                whileHover="hover"
-                whileTap="tap"
-                variants={buttonMotion}
-                className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-6 py-3.5 text-base font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {loading ? "Submitting..." : "Submit Application"}
-              </motion.button>
+              <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
+                {currentStep > 0 ? (
+                  <button
+                    type="button"
+                    disabled={loading}
+                    onClick={() => setCurrentStep((step) => step - 1)}
+                    className="inline-flex min-h-12 items-center justify-center rounded-xl border border-slate-300 px-6 py-3 font-semibold text-slate-900 hover:bg-slate-50 disabled:opacity-60"
+                  >
+                    Back
+                  </button>
+                ) : (
+                  <span />
+                )}
 
-              <FormStatus success={success} error={errorMsg} />
+                {currentStep < steps.length - 1 ? (
+                  <button
+                    type="button"
+                    onClick={continueToNextStep}
+                    className="inline-flex min-h-12 items-center justify-center rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700"
+                  >
+                    Continue
+                  </button>
+                ) : (
+                  <motion.button
+                    type="submit"
+                    disabled={loading}
+                    initial="rest"
+                    animate="rest"
+                    whileHover="hover"
+                    whileTap="tap"
+                    variants={buttonMotion}
+                    className="inline-flex min-h-12 items-center justify-center rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {loading ? "Submitting…" : errorMessage ? "Try submission again" : "Submit application"}
+                  </motion.button>
+                )}
+              </div>
+              <FormStatus error={errorMessage} />
             </div>
           </form>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Field({
+  label,
+  id,
+  required,
+  children,
+}: {
+  label: string;
+  id: string;
+  required?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label htmlFor={id} className="mb-2 block text-sm font-medium text-slate-700">
+        {label}
+        {required && <span aria-hidden="true"> *</span>}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+function CandidateChoice({
+  title,
+  description,
+}: {
+  title: string;
+  description: string;
+}) {
+  return (
+    <section className="bg-slate-50 section">
+      <div className="mx-auto max-w-3xl px-4 sm:px-6">
+        <div className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
+          <h1 className="text-3xl font-bold text-slate-900">{title}</h1>
+          <p className="mt-4 leading-8 text-slate-600">{description}</p>
+          <div className="mt-7 flex flex-wrap gap-3">
+            <Link
+              href="/jobs"
+              className="inline-flex min-h-12 items-center justify-center rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700"
+            >
+              Browse open positions
+            </Link>
+            <Link
+              href="/talent-network"
+              className="inline-flex min-h-12 items-center justify-center rounded-xl border border-slate-300 px-6 py-3 font-semibold text-slate-900 hover:bg-slate-50"
+            >
+              Join the talent network
+            </Link>
+          </div>
         </div>
       </div>
     </section>

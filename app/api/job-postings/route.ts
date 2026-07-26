@@ -20,6 +20,7 @@ export async function POST(request: Request) {
     title: body.title,
     slug: body.slug,
     department: body.department || null,
+    industry: body.industry || null,
     location: body.location || null,
     work_model: body.work_model || null,
     employment_type: body.employment_type || null,

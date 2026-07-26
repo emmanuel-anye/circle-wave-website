@@ -23,6 +23,13 @@ No analytics provider is installed, configured, or contacted by default.
 | `employer_brief_started` | `placement` | First focus within the hiring brief |
 | `employer_brief_submitted` | `placement` | Confirmed successful server response |
 | `form_error` | `form`, `stage` | Employer brief submission error |
+| `job_search` | `has_keyword`, `filter_count` | Submitted job search without recording keyword or filter values |
+| `job_view` | `has_salary` | Open job-detail view |
+| `job_shared` | `method` | Native share or clipboard fallback |
+| `application_started` | `has_job` | First interaction with a job application |
+| `application_completed` | `has_job` | Confirmed successful job application |
+| `talent_network_started` | `has_job` | First interaction with talent registration |
+| `talent_network_completed` | `has_job` | Confirmed successful talent registration |
 
 ## Future provider integration
 

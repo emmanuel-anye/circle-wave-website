@@ -28,6 +28,35 @@ export type ConversionEvent =
         form: "employer_brief";
         stage: "validation" | "submission";
       };
+    }
+  | {
+      name: "job_search";
+      properties: {
+        has_keyword: boolean;
+        filter_count: number;
+      };
+    }
+  | {
+      name: "job_view";
+      properties: {
+        has_salary: boolean;
+      };
+    }
+  | {
+      name: "job_shared";
+      properties: {
+        method: "native" | "clipboard";
+      };
+    }
+  | {
+      name:
+        | "application_started"
+        | "application_completed"
+        | "talent_network_started"
+        | "talent_network_completed";
+      properties: {
+        has_job: boolean;
+      };
     };
 
 export type AnalyticsAdapter = {

@@ -6,6 +6,7 @@ const initialForm = {
   title: "",
   slug: "",
   department: "",
+  industry: "",
   location: "",
   work_model: "",
   employment_type: "",
@@ -153,6 +154,19 @@ export default function AdminJobPostingForm() {
               onChange={handleChange}
               className="input"
               placeholder="Remote / Rwanda / Cameroon"
+            />
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              Industry
+            </label>
+            <input
+              name="industry"
+              value={formData.industry}
+              onChange={handleChange}
+              className="input"
+              placeholder="Optional verified industry"
             />
           </div>
 

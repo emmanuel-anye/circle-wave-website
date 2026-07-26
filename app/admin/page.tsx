@@ -8,6 +8,7 @@ import {
   getJobApplications,
   getContactMessages,
   getJobPostings,
+  getTalentNetworkRegistrations,
 } from "@/lib/admin-data";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 
@@ -16,10 +17,17 @@ export default async function AdminPage() {
     redirect("/admin/login");
   }
 
-  const [employerRequests, jobApplications, contactMessages, jobPostings] =
+  const [
+    employerRequests,
+    jobApplications,
+    talentNetworkRegistrations,
+    contactMessages,
+    jobPostings,
+  ] =
     await Promise.all([
       getEmployerRequests(),
       getJobApplications(),
+      getTalentNetworkRegistrations(),
       getContactMessages(),
       getJobPostings(),
     ]);
@@ -36,8 +44,8 @@ export default async function AdminPage() {
               Submissions overview
             </h1>
             <p className="mt-4 text-lg leading-8 text-slate-600">
-              Review employer requests, job applications, contact messages,
-              and manage open job postings.
+              Review employer requests, job applications, talent profiles,
+              contact messages, and manage job postings.
             </p>
           </Reveal>
 
@@ -48,6 +56,7 @@ export default async function AdminPage() {
           <AdminDashboardClient
             employerRequests={employerRequests}
             jobApplications={jobApplications}
+            talentNetworkRegistrations={talentNetworkRegistrations}
             contactMessages={contactMessages}
             jobPostings={jobPostings}
           />
