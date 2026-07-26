@@ -46,8 +46,9 @@ Docker health check for that endpoint.
 
 ## Phase 1 conversion configuration
 
-`NEXT_PUBLIC_CONSULTATION_BOOKING_URL` is optional. Set it to the approved
-`https://` booking page before building the application. If it is blank or
+`NEXT_PUBLIC_CONSULTATION_BOOKING_URL` is optional. Production booking links
+must use HTTPS. Development builds may use HTTP only for `localhost` or
+`127.0.0.1`; public HTTP URLs are always rejected. If the value is blank or
 invalid, consultation calls to action safely fall back to the Circle Wave
 contact form.
 
