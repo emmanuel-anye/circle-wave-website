@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import PageTransition from "@/components/ui/PageTransition";
 import Reveal from "@/components/ui/Reveal";
@@ -23,14 +24,13 @@ export default async function AdminPage() {
     talentNetworkRegistrations,
     contactMessages,
     jobPostings,
-  ] =
-    await Promise.all([
-      getEmployerRequests(),
-      getJobApplications(),
-      getTalentNetworkRegistrations(),
-      getContactMessages(),
-      getJobPostings(),
-    ]);
+  ] = await Promise.all([
+    getEmployerRequests(),
+    getJobApplications(),
+    getTalentNetworkRegistrations(),
+    getContactMessages(),
+    getJobPostings(),
+  ]);
 
   return (
     <PageTransition>
@@ -47,6 +47,12 @@ export default async function AdminPage() {
               Review employer requests, job applications, talent profiles,
               contact messages, and manage job postings.
             </p>
+            <Link
+              href="/admin/operations"
+              className="mt-6 inline-flex min-h-12 items-center justify-center rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700"
+            >
+              Open recruitment operations
+            </Link>
           </Reveal>
 
           <div className="mt-10">
