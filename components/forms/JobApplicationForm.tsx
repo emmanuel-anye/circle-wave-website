@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { buttonMotion } from "@/lib/motion";
+import FormStatus from "@/components/ui/FormStatus";
 
 export default function JobApplicationForm() {
   const searchParams = useSearchParams();
@@ -135,7 +136,11 @@ export default function JobApplicationForm() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="form-body">
+          <form
+            onSubmit={handleSubmit}
+            className="form-body"
+            aria-busy={loading}
+          >
             <input name="website" value={formData.website} onChange={handleChange} tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
@@ -338,17 +343,7 @@ export default function JobApplicationForm() {
                 {loading ? "Submitting..." : "Submit Application"}
               </motion.button>
 
-              {success && (
-                <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 transition">
-                  {success}
-                </div>
-              )}
-
-              {errorMsg && (
-                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 transition">
-                  {errorMsg}
-                </div>
-              )}
+              <FormStatus success={success} error={errorMsg} />
             </div>
           </form>
         </div>

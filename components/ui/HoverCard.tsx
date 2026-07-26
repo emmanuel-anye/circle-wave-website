@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { ReactNode } from "react";
 import { hoverLift } from "@/lib/motion";
 
@@ -11,11 +11,13 @@ export default function HoverCard({
   children: ReactNode;
   className?: string;
 }) {
+  const prefersReducedMotion = useReducedMotion();
+
   return (
     <motion.div
       initial="rest"
       animate="rest"
-      whileHover="hover"
+      whileHover={prefersReducedMotion ? undefined : "hover"}
       variants={hoverLift}
       className={className}
     >

@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { buttonMotion } from "@/lib/motion";
 import Reveal from "@/components/ui/Reveal";
+import FormStatus from "@/components/ui/FormStatus";
 
 const initialForm = {
   company_name: "",
@@ -87,7 +88,11 @@ export default function EmployerRequestForm() {
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="form-body">
+            <form
+              onSubmit={handleSubmit}
+              className="form-body"
+              aria-busy={loading}
+            >
             <input name="website" value={formData.website} onChange={handleChange} tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
@@ -374,17 +379,7 @@ export default function EmployerRequestForm() {
                 {loading ? "Submitting..." : "Submit Request"}
               </motion.button>
 
-              {successMessage && (
-                <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 transition-all duration-200 ease-out">
-                  {successMessage}
-                </div>
-              )}
-
-              {errorMessage && (
-                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 transition-all duration-200 ease-out">
-                  {errorMessage}
-                </div>
-              )}
+              <FormStatus success={successMessage} error={errorMessage} />
             </div>
           </form>
         </div>

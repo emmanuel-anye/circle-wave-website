@@ -2,6 +2,49 @@ import type { Variants } from "framer-motion";
 
 export const easeOut = [0.22, 1, 0.36, 1] as const;
 
+export const heroContainer: Variants = {
+  hidden: {},
+  visible: {
+    transition: {
+      delayChildren: 0.04,
+      staggerChildren: 0.07,
+    },
+  },
+};
+
+export const heroItem: Variants = {
+  hidden: {
+    opacity: 0,
+    y: 18,
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      ease: easeOut,
+    },
+  },
+};
+
+export const heroVisual: Variants = {
+  hidden: {
+    opacity: 0,
+    x: 20,
+    scale: 0.985,
+  },
+  visible: {
+    opacity: 1,
+    x: 0,
+    scale: 1,
+    transition: {
+      delay: 0.12,
+      duration: 0.6,
+      ease: easeOut,
+    },
+  },
+};
+
 export const pageVariants: Variants = {
   initial: {
     opacity: 0,
@@ -28,13 +71,13 @@ export const pageVariants: Variants = {
 export const sectionReveal: Variants = {
   hidden: {
     opacity: 0,
-    y: 28,
+    y: 20,
   },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.6,
+      duration: 0.5,
       ease: easeOut,
     },
   },
@@ -56,13 +99,13 @@ export const staggerContainer = (
 export const staggerItem: Variants = {
   hidden: {
     opacity: 0,
-    y: 20,
+    y: 16,
   },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.5,
+      duration: 0.44,
       ease: easeOut,
     },
   },
@@ -72,14 +115,12 @@ export const hoverLift = {
   rest: {
     y: 0,
     scale: 1,
-    boxShadow: "0px 1px 2px rgba(15, 23, 42, 0.04)",
   },
   hover: {
-    y: -6,
-    scale: 1.01,
-    boxShadow: "0px 14px 34px rgba(15, 23, 42, 0.10)",
+    y: -4,
+    scale: 1.006,
     transition: {
-      duration: 0.22,
+      duration: 0.2,
       ease: easeOut,
     },
   },
@@ -91,8 +132,8 @@ export const buttonMotion = {
     scale: 1,
   },
   hover: {
-    y: -2,
-    scale: 1.02,
+    y: -1,
+    scale: 1.01,
     transition: {
       duration: 0.18,
       ease: easeOut,
@@ -101,6 +142,67 @@ export const buttonMotion = {
   tap: {
     scale: 0.985,
     y: 0,
+    transition: {
+      duration: 0.12,
+      ease: easeOut,
+    },
+  },
+};
+
+export const mobileNavList: Variants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.035,
+      delayChildren: 0.03,
+    },
+  },
+  exit: {
+    transition: {
+      staggerChildren: 0.02,
+      staggerDirection: -1,
+    },
+  },
+};
+
+export const mobileNavItem: Variants = {
+  hidden: {
+    opacity: 0,
+    y: -6,
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.2,
+      ease: easeOut,
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: -4,
+    transition: {
+      duration: 0.12,
+      ease: easeOut,
+    },
+  },
+};
+
+export const formStatusMotion: Variants = {
+  hidden: {
+    opacity: 0,
+    y: -6,
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.2,
+      ease: easeOut,
+    },
+  },
+  exit: {
+    opacity: 0,
     transition: {
       duration: 0.12,
       ease: easeOut,

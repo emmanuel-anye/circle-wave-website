@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { ReactNode } from "react";
 import { staggerContainer, staggerItem } from "@/lib/motion";
 
@@ -19,12 +19,15 @@ export function StaggerGroup({
   once?: boolean;
   amount?: number;
 }) {
+  const prefersReducedMotion = useReducedMotion();
+
   return (
     <motion.div
       className={className}
+      data-motion-stagger
       variants={staggerContainer(staggerChildren, delayChildren)}
-      initial="hidden"
-      whileInView="visible"
+      initial={prefersReducedMotion ? false : "hidden"}
+      whileInView={prefersReducedMotion ? undefined : "visible"}
       viewport={{ once, amount }}
     >
       {children}
@@ -40,7 +43,11 @@ export function StaggerItem({
   className?: string;
 }) {
   return (
-    <motion.div className={className} variants={staggerItem}>
+    <motion.div
+      className={className}
+      data-motion-item
+      variants={staggerItem}
+    >
       {children}
     </motion.div>
   );

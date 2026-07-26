@@ -1,6 +1,6 @@
 "use client";
 
-import { MotionConfig, useReducedMotion } from "framer-motion";
+import { MotionConfig } from "framer-motion";
 import { ReactNode } from "react";
 
 export default function MotionProvider({
@@ -8,10 +8,8 @@ export default function MotionProvider({
 }: {
   children: ReactNode;
 }) {
-  const prefersReducedMotion = useReducedMotion();
-
   return (
-    <MotionConfig reducedMotion={prefersReducedMotion ? "always" : "never"}>
+    <MotionConfig reducedMotion="user">
       {children}
     </MotionConfig>
   );
