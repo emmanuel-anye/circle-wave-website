@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
+import ConversionLink from "@/components/analytics/ConversionLink";
 import MotionButton from "@/components/ui/MotionButton";
 import { heroContainer, heroItem, heroVisual } from "@/lib/motion";
 
@@ -46,17 +46,37 @@ export default function Hero() {
 
           <motion.div data-motion-item variants={heroItem}>
             <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-              <Link href="/employers">
+              <ConversionLink
+                href="/employers#hiring-brief"
+                event={{
+                  name: "cta_clicked",
+                  properties: {
+                    audience: "employer",
+                    placement: "hero",
+                    action: "start_hiring_brief",
+                  },
+                }}
+              >
                 <MotionButton className="inline-flex w-full justify-center rounded-xl bg-white px-6 py-3.5 font-semibold text-blue-900 shadow-lg sm:w-auto">
-                  Request Staffing
+                  Start a hiring brief
                 </MotionButton>
-              </Link>
+              </ConversionLink>
 
-              <Link href="/careers">
+              <ConversionLink
+                href="/jobs"
+                event={{
+                  name: "cta_clicked",
+                  properties: {
+                    audience: "candidate",
+                    placement: "hero",
+                    action: "view_open_roles",
+                  },
+                }}
+              >
                 <MotionButton className="inline-flex w-full justify-center rounded-xl border border-white/60 px-6 py-3.5 font-semibold text-white sm:w-auto">
-                  Apply for Jobs
+                  Explore open roles
                 </MotionButton>
-              </Link>
+              </ConversionLink>
             </div>
           </motion.div>
         </motion.div>

@@ -7,6 +7,7 @@ import Process from "@/components/sections/Process";
 import WhyChooseUs from "@/components/sections/WhyChooseUs";
 import CallToAction from "@/components/sections/CallToAction";
 import FinalCTA from "@/components/sections/FinalCTA";
+import SocialProof from "@/components/sections/SocialProof";
 
 export default function Home() {
   return (
@@ -14,6 +15,7 @@ export default function Home() {
       <>
         <Hero />
         <Stats />
+        <SocialProof />
         <Services />
         <Process />
         <Industries />

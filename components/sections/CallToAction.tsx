@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import ConversionLink from "@/components/analytics/ConversionLink";
 import Reveal from "@/components/ui/Reveal";
 import MotionButton from "@/components/ui/MotionButton";
 import HoverCard from "@/components/ui/HoverCard";
@@ -22,11 +22,21 @@ export default function CallToAction() {
                 Tell us your hiring needs, required roles, and timelines. We’ll
                 connect you with trained professionals ready to deliver results.
               </p>
-              <Link href="/employers">
+              <ConversionLink
+                href="/employers#hiring-brief"
+                event={{
+                  name: "cta_clicked",
+                  properties: {
+                    audience: "employer",
+                    placement: "audience_paths",
+                    action: "start_hiring_brief",
+                  },
+                }}
+              >
                 <MotionButton className="mt-6 inline-flex rounded-lg bg-white px-6 py-3 font-semibold text-blue-900 transition hover:bg-gray-100">
-                  Request Staffing
+                  Start a hiring brief
                 </MotionButton>
-              </Link>
+              </ConversionLink>
             </HoverCard>
           </Reveal>
 
@@ -42,11 +52,21 @@ export default function CallToAction() {
                 Apply to be part of our talent pool and access customer service
                 opportunities across industries worldwide.
               </p>
-              <Link href="/careers">
+              <ConversionLink
+                href="/jobs"
+                event={{
+                  name: "cta_clicked",
+                  properties: {
+                    audience: "candidate",
+                    placement: "audience_paths",
+                    action: "view_open_roles",
+                  },
+                }}
+              >
                 <MotionButton className="mt-6 inline-flex rounded-lg border border-white px-6 py-3 font-semibold text-white transition hover:bg-white hover:text-blue-700">
-                  Apply for Jobs
+                  View open positions
                 </MotionButton>
-              </Link>
+              </ConversionLink>
             </HoverCard>
           </Reveal>
         </div>

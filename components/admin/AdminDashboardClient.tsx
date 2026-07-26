@@ -9,15 +9,19 @@ type EmployerRequest = {
   contact_name?: string | null;
   email?: string | null;
   phone?: string | null;
+  preferred_contact_method?: string | null;
   industry?: string | null;
   job_roles?: string | null;
   headcount?: string | null;
+  hiring_timeline?: string | null;
   engagement_type?: string | null;
   work_model?: string | null;
   duration?: string | null;
   location?: string | null;
+  primary_goal?: string | null;
   compliance_requirements?: string | null;
   additional_notes?: string | null;
+  source_page?: string | null;
 };
 
 type JobApplication = {
@@ -162,6 +166,8 @@ export default function AdminDashboardClient({
         item.industry,
         item.location,
         item.job_roles,
+        item.primary_goal,
+        item.hiring_timeline,
       ]
         .filter(Boolean)
         .some((value) => value!.toLowerCase().includes(q))
@@ -379,8 +385,16 @@ export default function AdminDashboardClient({
                     <Field label="Contact Name" value={request.contact_name} />
                     <Field label="Email" value={request.email} />
                     <Field label="Phone" value={request.phone} />
+                    <Field
+                      label="Preferred Contact"
+                      value={request.preferred_contact_method}
+                    />
                     <Field label="Industry" value={request.industry} />
                     <Field label="Headcount" value={request.headcount} />
+                    <Field
+                      label="Hiring Timeline"
+                      value={request.hiring_timeline}
+                    />
                     <Field label="Engagement Type" value={request.engagement_type} />
                     <Field label="Work Model" value={request.work_model} />
                     <Field label="Duration" value={request.duration} />
@@ -389,6 +403,7 @@ export default function AdminDashboardClient({
 
                   <div className="mt-5 grid gap-4 md:grid-cols-2">
                     <Field label="Job Roles Needed" value={request.job_roles} />
+                    <Field label="Primary Hiring Goal" value={request.primary_goal} />
                     <Field
                       label="Compliance Requirements"
                       value={request.compliance_requirements}
@@ -404,6 +419,7 @@ export default function AdminDashboardClient({
 
                   <p className="mt-5 text-xs text-slate-500">
                     Submitted: {formatDate(request.created_at)}
+                    {request.source_page ? ` · Source: ${request.source_page}` : ""}
                   </p>
                 </div>
               ))}

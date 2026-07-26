@@ -5,6 +5,7 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import MotionButton from "@/components/ui/MotionButton";
+import ConversionLink from "@/components/analytics/ConversionLink";
 import { mobileNavItem, mobileNavList } from "@/lib/motion";
 
 const navLinks = [
@@ -84,11 +85,21 @@ export default function Navbar() {
               ))}
             </div>
 
-            <Link href="/employers">
+            <ConversionLink
+              href="/employers#hiring-brief"
+              event={{
+                name: "cta_clicked",
+                properties: {
+                  audience: "employer",
+                  placement: "navigation",
+                  action: "start_hiring_brief",
+                },
+              }}
+            >
               <MotionButton className="inline-flex rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700">
-                Request Staffing
+                Start hiring brief
               </MotionButton>
-            </Link>
+            </ConversionLink>
           </div>
 
           <button
@@ -155,15 +166,23 @@ export default function Navbar() {
                 ))}
 
                 <motion.div variants={mobileNavItem}>
-                  <Link
-                    href="/employers"
+                  <ConversionLink
+                    href="/employers#hiring-brief"
+                    event={{
+                      name: "cta_clicked",
+                      properties: {
+                        audience: "employer",
+                        placement: "navigation",
+                        action: "start_hiring_brief",
+                      },
+                    }}
                     onClick={() => setMobileOpen(false)}
                     className="mt-2 block"
                   >
                     <MotionButton className="inline-flex w-full items-center justify-center rounded-lg bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700">
-                      Request Staffing
+                      Start hiring brief
                     </MotionButton>
-                  </Link>
+                  </ConversionLink>
                 </motion.div>
               </motion.div>
             </motion.div>

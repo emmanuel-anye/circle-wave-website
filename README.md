@@ -19,10 +19,12 @@ cryptographically secure password generator (32 bytes or longer).
 ```bash
 npm run lint
 npm run typecheck
+npm test
 npm run build
 docker build \
   --build-arg NEXT_PUBLIC_SUPABASE_URL=https://example.supabase.co \
   --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY=local-placeholder \
+  --build-arg NEXT_PUBLIC_CONSULTATION_BOOKING_URL= \
   --tag circle-wave:local \
   --file dockerfile \
   .
@@ -41,3 +43,23 @@ Docker health check for that endpoint.
 - Set the Supabase site URL and allowed redirect URLs for the production domain.
 - Submit each public form and verify its database row, email, and admin view.
 - Confirm resume links expire and cannot be opened after their signed URL expires.
+
+## Phase 1 conversion configuration
+
+`NEXT_PUBLIC_CONSULTATION_BOOKING_URL` is optional. Production booking links
+must use HTTPS. Development builds may use HTTP only for `localhost` or
+`127.0.0.1`; public HTTP URLs are always rejected. If the value is blank or
+invalid, consultation calls to action safely fall back to the Circle Wave
+contact form.
+
+Conversion events use the provider-neutral abstraction documented in
+[`docs/conversion-events.md`](docs/conversion-events.md). No analytics provider
+is installed or active. Approved trust material can be added to
+`content/trust.ts`; the social-proof section remains hidden while that list is
+empty. See [`docs/business-information-needed.md`](docs/business-information-needed.md)
+for the exact approvals needed.
+
+The Phase 1 employer brief migration is
+`supabase/migrations/202607250001_phase_1_employer_hiring_brief.sql`. Apply it
+through the normal reviewed deployment process before deploying this code. Do
+not run it from the application.

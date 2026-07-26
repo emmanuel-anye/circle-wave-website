@@ -1,6 +1,7 @@
 "use client";
 
-import Link from "next/link";
+import ConversionLink from "@/components/analytics/ConversionLink";
+import ConsultationCTA from "@/components/conversion/ConsultationCTA";
 import Reveal from "@/components/ui/Reveal";
 import MotionButton from "@/components/ui/MotionButton";
 
@@ -25,17 +26,41 @@ export default function FinalCTA() {
               </div>
 
               <div className="flex flex-col gap-4 sm:flex-row lg:flex-col lg:items-start">
-                <Link href="/employers">
+                <ConversionLink
+                  href="/employers#hiring-brief"
+                  event={{
+                    name: "cta_clicked",
+                    properties: {
+                      audience: "employer",
+                      placement: "final_cta",
+                      action: "start_hiring_brief",
+                    },
+                  }}
+                >
                   <MotionButton className="inline-flex w-full justify-center rounded-xl bg-blue-600 shadow-lg shadow-blue-600/20 px-6 py-3.5 font-semibold text-white transition hover:bg-blue-700 sm:w-auto">
-                    Request Staffing
+                    Start a hiring brief
                   </MotionButton>
-                </Link>
+                </ConversionLink>
 
-                <Link href="/contact">
-                  <MotionButton className="inline-flex w-full justify-center rounded-xl border border-slate-300 px-6 py-3.5 font-semibold text-slate-900 transition hover:border-slate-400 hover:bg-slate-50 sm:w-auto">
-                    Contact Us
-                  </MotionButton>
-                </Link>
+                <ConsultationCTA
+                  placement="final_cta"
+                  className="inline-flex w-full justify-center rounded-xl border border-slate-300 px-6 py-3.5 font-semibold text-slate-900 transition hover:border-slate-400 hover:bg-slate-50 sm:w-auto"
+                />
+
+                <ConversionLink
+                  href="/jobs"
+                  event={{
+                    name: "cta_clicked",
+                    properties: {
+                      audience: "candidate",
+                      placement: "final_cta",
+                      action: "view_open_roles",
+                    },
+                  }}
+                  className="text-sm font-semibold text-blue-700 hover:text-blue-800"
+                >
+                  Looking for work? Explore open roles
+                </ConversionLink>
               </div>
             </div>
           </div>
