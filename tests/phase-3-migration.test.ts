@@ -24,6 +24,25 @@ test("protects recruitment activity from browser roles", () => {
     migration,
     /revoke all on table public\.recruitment_activity from anon, authenticated/
   );
+  assert.match(
+    migration,
+    /revoke all on function public\.record_recruitment_activity\(\) from public/
+  );
+});
+
+test("records status and note changes with database triggers", () => {
+  assert.match(
+    migration,
+    /create or replace function public\.record_recruitment_activity\(\)/
+  );
+  assert.match(migration, /job_applications_recruitment_activity/);
+  assert.match(migration, /employer_requests_recruitment_activity/);
+  assert.match(migration, /talent_network_recruitment_activity/);
+  assert.match(migration, /new\.status is distinct from old\.status/);
+  assert.match(
+    migration,
+    /new\.internal_notes is distinct from old\.internal_notes/
+  );
 });
 
 test("adds indexes for pipeline and activity views", () => {
