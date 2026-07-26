@@ -14,7 +14,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="page-fade">
+      <body className="page-fade" suppressHydrationWarning>
         <MotionProvider>
           <MainLayout>{children}</MainLayout>
         </MotionProvider>
