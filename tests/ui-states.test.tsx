@@ -3,6 +3,7 @@ import test from "node:test";
 import { renderToStaticMarkup } from "react-dom/server";
 import ConsultationCTA from "../components/conversion/ConsultationCTA";
 import SocialProof from "../components/sections/SocialProof";
+import JobCard from "../components/jobs/JobCard";
 
 test("trust section remains hidden without approved material", () => {
   assert.equal(renderToStaticMarkup(<SocialProof items={[]} />), "");
@@ -48,4 +49,30 @@ test("consultation CTA uses an explicitly configured HTTPS destination", () => {
   assert.match(html, /href="https:\/\/booking\.example\.com\/circle-wave"/);
   assert.match(html, /Book a consultation/);
   assert.match(html, /target="_blank"/);
+});
+
+test("job cards display salary only when genuine salary data exists", () => {
+  const withoutSalary = renderToStaticMarkup(
+    <JobCard
+      job={{
+        id: "job-1",
+        title: "Support Specialist",
+        slug: "support-specialist",
+      }}
+    />
+  );
+  const withSalary = renderToStaticMarkup(
+    <JobCard
+      job={{
+        id: "job-2",
+        title: "Quality Analyst",
+        slug: "quality-analyst",
+        salary_range: "Verified salary range",
+      }}
+    />
+  );
+
+  assert.doesNotMatch(withoutSalary, />Salary</);
+  assert.match(withSalary, />Salary</);
+  assert.match(withSalary, /Verified salary range/);
 });

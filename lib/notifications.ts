@@ -32,12 +32,23 @@ type ApplicantConfirmationParams = {
   to: string;
   name?: string | null;
   jobTitle?: string | null;
+  applicationReference?: string | null;
 };
+
+function escapeHtml(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
 
 export async function sendApplicantConfirmation({
   to,
   name,
   jobTitle,
+  applicationReference,
 }: ApplicantConfirmationParams) {
   if (!process.env.RESEND_API_KEY) {
     console.warn("RESEND_API_KEY not set. Skipping confirmation email.");
@@ -55,13 +66,13 @@ export async function sendApplicantConfirmation({
       <h2 style="margin-bottom: 8px;">Application received</h2>
 
       <p style="margin-bottom: 16px;">
-        ${name ? `Hi ${name},` : "Hello,"}
+        ${name ? `Hi ${escapeHtml(name)},` : "Hello,"}
       </p>
 
       <p style="margin-bottom: 16px;">
         Thank you for applying ${
           jobTitle
-            ? `for the role of <strong>${jobTitle}</strong>`
+            ? `for the role of <strong>${escapeHtml(jobTitle)}</strong>`
             : "with Circle Wave"
         }.
       </p>
@@ -70,6 +81,14 @@ export async function sendApplicantConfirmation({
         Our team will review your application and reach out if your profile
         matches our current or upcoming opportunities.
       </p>
+
+      ${
+        applicationReference
+          ? `<p style="margin-bottom: 16px;">
+              Your application reference is <strong>${escapeHtml(applicationReference)}</strong>.
+            </p>`
+          : ""
+      }
 
       <p style="margin-bottom: 16px;">
         If you have any questions, feel free to contact us at

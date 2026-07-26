@@ -63,3 +63,20 @@ The Phase 1 employer brief migration is
 `supabase/migrations/202607250001_phase_1_employer_hiring_brief.sql`. Apply it
 through the normal reviewed deployment process before deploying this code. Do
 not run it from the application.
+
+## Phase 2 candidate experience
+
+Phase 2 adds server-rendered job filters, consistent job metadata, private
+application references, and the optional talent-network workflow. It does not
+activate job-alert delivery or add an email provider.
+
+Review and apply
+`supabase/migrations/202607260001_phase_2_candidate_experience.sql` before
+deploying Phase 2. It adds the job industry field, application references, the
+`job_applications(job_id)` index, and the private talent-network table. See
+[`docs/phase-2-candidate-experience.md`](docs/phase-2-candidate-experience.md)
+for security assumptions, date rules, deferred messaging, and manual acceptance.
+
+Phase 2 requires no new environment variables. Existing optional Resend
+configuration continues to control application confirmations; talent-network
+registration does not subscribe candidates to job alerts.
