@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { ReactNode } from "react";
 import { sectionReveal } from "@/lib/motion";
 
@@ -15,12 +15,15 @@ export default function Reveal({
   once?: boolean;
   amount?: number;
 }) {
+  const prefersReducedMotion = useReducedMotion();
+
   return (
     <motion.div
       className={className}
+      data-motion-reveal
       variants={sectionReveal}
-      initial="hidden"
-      whileInView="visible"
+      initial={prefersReducedMotion ? false : "hidden"}
+      whileInView={prefersReducedMotion ? undefined : "visible"}
       viewport={{ once, amount }}
     >
       {children}

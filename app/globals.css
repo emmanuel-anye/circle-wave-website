@@ -201,6 +201,13 @@ select {
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }
+
+  [data-motion-reveal],
+  [data-motion-stagger],
+  [data-motion-item] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
 
 ::-webkit-scrollbar {

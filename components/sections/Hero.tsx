@@ -2,40 +2,49 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { StaggerGroup, StaggerItem } from "@/components/ui/Stagger";
+import { motion, useReducedMotion } from "framer-motion";
 import MotionButton from "@/components/ui/MotionButton";
+import { heroContainer, heroItem, heroVisual } from "@/lib/motion";
 
 export default function Hero() {
+  const prefersReducedMotion = useReducedMotion();
+
   return (
     <section className="relative overflow-hidden bg-gradient-to-r from-blue-950 via-blue-900 to-blue-600 py-20 text-white sm:py-24 md:py-28">
-      <div className="absolute inset-0 opacity-20">
+      <div className="absolute inset-0 opacity-20" aria-hidden="true">
         <div className="absolute -top-16 left-0 h-56 w-56 rounded-full bg-blue-300 blur-3xl" />
         <div className="absolute bottom-0 right-0 h-72 w-72 rounded-full bg-cyan-300 blur-3xl" />
       </div>
 
       <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
-        <StaggerGroup className="max-w-2xl" staggerChildren={0.08}>
-          <StaggerItem>
+        <motion.div
+          className="max-w-2xl"
+          data-motion-stagger
+          variants={heroContainer}
+          initial={prefersReducedMotion ? false : "hidden"}
+          animate={prefersReducedMotion ? undefined : "visible"}
+        >
+          <motion.div data-motion-item variants={heroItem}>
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-200 sm:text-sm">
               Global Staffing & Customer Support
             </p>
-          </StaggerItem>
+          </motion.div>
 
-          <StaggerItem>
+          <motion.div data-motion-item variants={heroItem}>
             <h1 className="mt-6 max-w-xl text-4xl font-bold leading-[1.05] sm:text-5xl lg:text-[4.25rem]">
               Customer service staffing and consulting for growing businesses
             </h1>
-          </StaggerItem>
+          </motion.div>
 
-          <StaggerItem>
+          <motion.div data-motion-item variants={heroItem}>
             <p className="mt-6 max-w-xl text-base leading-8 text-blue-100 sm:text-lg">
               Circle Wave helps organizations build high-performing customer support
               teams with flexible staffing, operational guidance, and service-focused
               talent across Africa and beyond.
             </p>
-          </StaggerItem>
+          </motion.div>
 
-          <StaggerItem>
+          <motion.div data-motion-item variants={heroItem}>
             <div className="mt-10 flex flex-col gap-4 sm:flex-row">
               <Link href="/employers">
                 <MotionButton className="inline-flex w-full justify-center rounded-xl bg-white px-6 py-3.5 font-semibold text-blue-900 shadow-lg sm:w-auto">
@@ -49,19 +58,25 @@ export default function Hero() {
                 </MotionButton>
               </Link>
             </div>
-          </StaggerItem>
-        </StaggerGroup>
+          </motion.div>
+        </motion.div>
 
-        <div className="relative">
+        <motion.div
+          className="relative"
+          data-motion-reveal
+          variants={heroVisual}
+          initial={prefersReducedMotion ? false : "hidden"}
+          animate={prefersReducedMotion ? undefined : "visible"}
+        >
           <div className="absolute -inset-4 rounded-[2rem] bg-white/10 blur-2xl" />
           <div className="relative overflow-hidden rounded-[2rem] border border-white/15 bg-white/10 shadow-2xl">
             <Image
               src="/images/hero-support.jpg"
-               alt="Customer support professional working with headset"
-               width={1200}
-               height={900}
-               priority
-               className="h-[320px] w-full rounded-2xl object-cover shadow-lg sm:h-[380px] lg:h-[460px]"
+              alt="Customer support professional working with headset"
+              width={1200}
+              height={900}
+              priority
+              className="h-[320px] w-full rounded-2xl object-cover shadow-lg sm:h-[380px] lg:h-[460px]"
             />
           </div>
 
@@ -73,7 +88,7 @@ export default function Hero() {
               Flexible staffing for modern teams
             </p>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

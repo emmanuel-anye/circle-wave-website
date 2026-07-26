@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Reveal from "@/components/ui/Reveal";
 import { StaggerGroup, StaggerItem } from "@/components/ui/Stagger";
+import HoverCard from "@/components/ui/HoverCard";
 
 const stats = [
   {
@@ -61,7 +62,7 @@ export default function Stats() {
         <StaggerGroup className="mt-14 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
           {stats.map((stat) => (
             <StaggerItem key={stat.title}>
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur">
+              <HoverCard className="h-full rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur">
                 <h3 className="text-lg font-semibold text-white">
                   {stat.title}
                 </h3>
@@ -69,7 +70,7 @@ export default function Stats() {
                 <p className="mt-3 text-sm leading-7 text-slate-300">
                   {stat.text}
                 </p>
-              </div>
+              </HoverCard>
             </StaggerItem>
           ))}
         </StaggerGroup>
