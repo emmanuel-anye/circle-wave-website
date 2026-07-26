@@ -9,6 +9,7 @@ import {
   getTalentNetworkRegistrations,
 } from "@/lib/admin-data";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
+import "./admin-polish.css";
 
 export default async function AdminPage() {
   if (!(await isAdminAuthenticated())) {
@@ -25,13 +26,15 @@ export default async function AdminPage() {
   ]);
 
   return (
-    <AdminWorkspaceClient
-      jobs={jobs}
-      applications={applications}
-      employers={employers}
-      talent={talent}
-      activity={activity}
-      messages={messages}
-    />
+    <div className="admin-workspace">
+      <AdminWorkspaceClient
+        jobs={jobs}
+        applications={applications}
+        employers={employers}
+        talent={talent}
+        activity={activity}
+        messages={messages}
+      />
+    </div>
   );
 }
