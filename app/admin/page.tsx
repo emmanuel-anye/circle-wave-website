@@ -56,7 +56,7 @@ export default async function AdminPage() {
           </Reveal>
 
           <div className="mt-10">
-            <AdminJobPostingForm />
+            <AdminJobPostingForm jobPostings={jobPostings} />
           </div>
 
           <AdminDashboardClient
