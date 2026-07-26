@@ -70,6 +70,21 @@ export async function getContactMessages() {
   return data ?? [];
 }
 
+export async function getRecruitmentActivity() {
+  const { data, error } = await getSupabaseAdmin()
+    .from("recruitment_activity")
+    .select("id,created_at,entity_type,entity_id,action,previous_value,new_value,note")
+    .order("created_at", { ascending: false })
+    .limit(100);
+
+  if (error) {
+    console.error("Error fetching recruitment activity:", error);
+    return [];
+  }
+
+  return data ?? [];
+}
+
 export async function getJobPostings() {
   const { data, error } = await getSupabaseAdmin()
     .from("job_postings")
