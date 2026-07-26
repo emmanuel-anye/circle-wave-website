@@ -63,35 +63,5 @@ export async function PATCH(request: Request) {
     );
   }
 
-  const activity = [];
-  if (updates.status) {
-    activity.push({
-      entity_type: entityType,
-      entity_id: id,
-      action: "status_changed",
-      previous_value: current.status ?? null,
-      new_value: updates.status,
-      note: null,
-    });
-  }
-  if (updates.internal_notes !== undefined) {
-    activity.push({
-      entity_type: entityType,
-      entity_id: id,
-      action: "notes_updated",
-      previous_value: null,
-      new_value: null,
-      note: updates.internal_notes || "Notes cleared",
-    });
-  }
-
-  const { error: activityError } = await supabase
-    .from("recruitment_activity")
-    .insert(activity);
-
-  if (activityError) {
-    console.error("Unable to write recruitment activity:", activityError);
-  }
-
   return NextResponse.json({ ok: true });
 }
