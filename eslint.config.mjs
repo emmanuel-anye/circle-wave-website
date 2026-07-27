@@ -5,6 +5,15 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
+  {
+    files: ["components/admin/AdminWorkspaceClient.tsx"],
+    rules: {
+      // The admin workspace intentionally restores persisted UI state after mount.
+      // This is browser-only state and cannot be read during server rendering.
+      "react-hooks/set-state-in-effect": "off",
+      "no-empty": ["error", { allowEmptyCatch: true }],
+    },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

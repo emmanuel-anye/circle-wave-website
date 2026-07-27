@@ -1,0 +1,135 @@
+.admin-workspace {
+  min-height: 100vh;
+  background: #f1f5f9;
+}
+
+.admin-workspace aside > div {
+  overscroll-behavior: contain;
+}
+
+.admin-workspace header {
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
+}
+
+.admin-workspace main {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 1680px;
+}
+
+.admin-workspace table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.admin-workspace thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  white-space: nowrap;
+}
+
+.admin-workspace tbody tr {
+  transition: background-color 160ms ease, box-shadow 160ms ease;
+}
+
+.admin-workspace tbody tr:focus-within {
+  background: #eff6ff;
+}
+
+.admin-workspace button,
+.admin-workspace a,
+.admin-workspace input,
+.admin-workspace select,
+.admin-workspace textarea {
+  outline-offset: 3px;
+}
+
+.admin-workspace button:focus-visible,
+.admin-workspace a:focus-visible,
+.admin-workspace input:focus-visible,
+.admin-workspace select:focus-visible,
+.admin-workspace textarea:focus-visible {
+  outline: 2px solid #2563eb;
+}
+
+.admin-workspace [role="dialog"] {
+  animation: admin-drawer-enter 200ms ease-out;
+}
+
+.admin-workspace [role="alert"],
+.admin-workspace [role="status"] {
+  animation: admin-feedback-enter 180ms ease-out;
+}
+
+@keyframes admin-drawer-enter {
+  from {
+    opacity: 0;
+    transform: translateX(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes admin-feedback-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 1023px) {
+  .admin-workspace main {
+    padding-bottom: 6rem;
+  }
+
+  .admin-workspace header > div {
+    min-height: 4.5rem;
+  }
+
+  .admin-workspace header input {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 639px) {
+  .admin-workspace main {
+    padding: 1rem;
+  }
+
+  .admin-workspace header > div {
+    gap: 0.625rem;
+    padding-inline: 0.75rem;
+  }
+
+  .admin-workspace header input {
+    font-size: 0.875rem;
+  }
+
+  .admin-workspace table th,
+  .admin-workspace table td {
+    padding-inline: 0.875rem;
+  }
+
+  .admin-workspace [role="dialog"] {
+    width: 100vw;
+    max-width: 100vw;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-workspace *,
+  .admin-workspace *::before,
+  .admin-workspace *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
