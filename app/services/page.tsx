@@ -51,7 +51,7 @@ export default function ServicesPage() {
               </div>
             </Reveal>
 
-            <Reveal delay={0.08}>
+            <Reveal>
               <div className="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur-xl sm:p-8">
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-300">Built for changing demand</p>
                 <div className="mt-6 grid gap-4 sm:grid-cols-2">
@@ -126,7 +126,7 @@ export default function ServicesPage() {
               </Link>
             </Reveal>
 
-            <Reveal delay={0.08}>
+            <Reveal>
               <div className="rounded-[2rem] border border-blue-100 bg-blue-50 p-7 sm:p-9">
                 <div className="grid gap-3 sm:grid-cols-2">
                   {staffingModels.map((model) => (
