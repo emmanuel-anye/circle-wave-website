@@ -56,7 +56,7 @@ export default function AboutPage() {
               </div>
             </Reveal>
 
-            <Reveal delay={0.08}>
+            <Reveal>
               <div className="rounded-[2rem] border border-white/15 bg-white/10 p-6 shadow-2xl backdrop-blur-xl sm:p-8">
                 <div className="flex items-center gap-3">
                   <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-300/15 text-cyan-200">
@@ -101,7 +101,7 @@ export default function AboutPage() {
               </Reveal>
 
               <div className="grid gap-8">
-                <Reveal delay={0.05}>
+                <Reveal>
                   <HoverCard className="rounded-[2rem] border border-blue-100 bg-blue-50 p-8 shadow-sm">
                     <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">Our mission</p>
                     <h2 className="mt-3 text-2xl font-bold text-blue-950">Help businesses grow through customer service excellence.</h2>
@@ -111,7 +111,7 @@ export default function AboutPage() {
                     </p>
                   </HoverCard>
                 </Reveal>
-                <Reveal delay={0.1}>
+                <Reveal>
                   <HoverCard className="rounded-[2rem] border border-cyan-100 bg-cyan-50 p-8 shadow-sm">
                     <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-700">Our vision</p>
                     <h2 className="mt-3 text-2xl font-bold text-slate-900">A trusted global partner for support operations.</h2>
