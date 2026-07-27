@@ -89,7 +89,7 @@ export default function IndustriesPage() {
 
             <StaggerGroup className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {industries.map((industry, index) => {
-                const Icon = industryIcons[index % industryIcons.length];
+                const Icon = industryIcons[index % industryIcons.length] ?? Building2;
                 return (
                   <StaggerItem key={industry}>
                     <HoverCard className="group h-full rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
