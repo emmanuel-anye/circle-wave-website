@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import AdminWorkspaceClient from "@/components/admin/AdminWorkspaceClient";
 import {
@@ -35,6 +36,12 @@ export default async function AdminPage() {
         activity={activity}
         messages={messages}
       />
+      <Link
+        href="/admin/operations"
+        className="fixed bottom-5 left-5 z-40 rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-xl transition hover:bg-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-offset-2 lg:left-80"
+      >
+        Recruitment operations
+      </Link>
     </div>
   );
 }
