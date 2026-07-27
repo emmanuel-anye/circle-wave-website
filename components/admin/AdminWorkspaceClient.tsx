@@ -1,369 +1,63 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import {
-  applicationStatuses,
-  employerStatuses,
-  humanizeStatus,
-  talentStatuses,
-  type RecruitmentEntityType,
-} from "@/lib/recruitment-operations";
+import { useEffect, useMemo, useState } from "react";
+import { applicationStatuses, employerStatuses, humanizeStatus, talentStatuses, type RecruitmentEntityType } from "@/lib/recruitment-operations";
 
-type Job = {
-  id: string;
-  created_at?: string | null;
-  title?: string | null;
-  slug?: string | null;
-  department?: string | null;
-  industry?: string | null;
-  location?: string | null;
-  work_model?: string | null;
-  employment_type?: string | null;
-  salary_range?: string | null;
-  short_summary?: string | null;
-  description?: string | null;
-  responsibilities?: string | null;
-  requirements?: string | null;
-  preferred_qualifications?: string | null;
-  application_deadline?: string | null;
-  status?: string | null;
-  featured?: boolean | null;
-};
+type Job = { id:string; created_at?:string|null; title?:string|null; slug?:string|null; department?:string|null; industry?:string|null; location?:string|null; work_model?:string|null; employment_type?:string|null; salary_range?:string|null; short_summary?:string|null; description?:string|null; responsibilities?:string|null; requirements?:string|null; preferred_qualifications?:string|null; application_deadline?:string|null; status?:string|null; featured?:boolean|null };
+type RecruitmentRecord = { id:string; created_at?:string|null; status?:string|null; internal_notes?:string|null; status_updated_at?:string|null; full_name?:string|null; email?:string|null; phone?:string|null; location?:string|null; experience_level?:string|null; job_title_snapshot?:string|null; application_reference?:string|null; resume_url?:string|null; company_name?:string|null; contact_name?:string|null; job_roles?:string|null; hiring_timeline?:string|null; target_roles?:string|null; registration_reference?:string|null };
+type Activity = { id:string; created_at?:string|null; entity_type?:string|null; entity_id?:string|null; action?:string|null; previous_value?:string|null; new_value?:string|null; note?:string|null };
+type Message = { id:string; created_at?:string|null; full_name?:string|null; email?:string|null; company?:string|null; subject?:string|null; message?:string|null };
+type Section = "overview"|"jobs"|"candidates"|"employers"|"talent"|"activity"|"messages"|"settings";
+type Drawer = {kind:"job";record:Job|null}|{kind:"record";entity:RecruitmentEntityType;record:RecruitmentRecord}|null;
+type Toast = {kind:"success"|"error";message:string}|null;
+type Props = { jobs:Job[]; applications:RecruitmentRecord[]; employers:RecruitmentRecord[]; talent:RecruitmentRecord[]; activity:Activity[]; messages:Message[] };
 
-type RecruitmentRecord = {
-  id: string;
-  created_at?: string | null;
-  status?: string | null;
-  internal_notes?: string | null;
-  status_updated_at?: string | null;
-  full_name?: string | null;
-  email?: string | null;
-  phone?: string | null;
-  location?: string | null;
-  experience_level?: string | null;
-  job_title_snapshot?: string | null;
-  application_reference?: string | null;
-  resume_url?: string | null;
-  company_name?: string | null;
-  contact_name?: string | null;
-  job_roles?: string | null;
-  hiring_timeline?: string | null;
-  target_roles?: string | null;
-  registration_reference?: string | null;
-};
+const storageKey="circle-wave-admin-workspace";
+const validSections:Section[]=["overview","jobs","candidates","employers","talent","activity","messages","settings"];
+const emptyJob={title:"",slug:"",department:"",industry:"",location:"",work_model:"",employment_type:"",salary_range:"",short_summary:"",description:"",responsibilities:"",requirements:"",preferred_qualifications:"",application_deadline:"",status:"closed",featured:false};
+const slugify=(value:string)=>value.toLowerCase().trim().replace(/[^a-z0-9\s-]/g,"").replace(/\s+/g,"-").replace(/-+/g,"-");
+const date=(value?:string|null)=>value?new Date(value).toLocaleDateString():"—";
+const dateTime=(value?:string|null)=>value?new Date(value).toLocaleString():"—";
+const isExpired=(job:Job)=>Boolean(job.application_deadline&&job.application_deadline<new Date().toISOString().slice(0,10));
+function jobForm(job:Job|null){if(!job)return{...emptyJob};return{title:job.title??"",slug:job.slug??"",department:job.department??"",industry:job.industry??"",location:job.location??"",work_model:job.work_model??"",employment_type:job.employment_type??"",salary_range:job.salary_range??"",short_summary:job.short_summary??"",description:job.description??"",responsibilities:job.responsibilities??"",requirements:job.requirements??"",preferred_qualifications:job.preferred_qualifications??"",application_deadline:job.application_deadline??"",status:job.status==="open"?"open":"closed",featured:Boolean(job.featured)}}
 
-type Activity = {
-  id: string;
-  created_at?: string | null;
-  entity_type?: string | null;
-  entity_id?: string | null;
-  action?: string | null;
-  previous_value?: string | null;
-  new_value?: string | null;
-  note?: string | null;
-};
-
-type Message = {
-  id: string;
-  created_at?: string | null;
-  full_name?: string | null;
-  email?: string | null;
-  company?: string | null;
-  subject?: string | null;
-  message?: string | null;
-};
-
-type Section = "overview" | "jobs" | "candidates" | "employers" | "talent" | "activity" | "messages" | "settings";
-type Drawer =
-  | { kind: "job"; record: Job | null }
-  | { kind: "record"; entity: RecruitmentEntityType; record: RecruitmentRecord }
-  | null;
-
-type Props = {
-  jobs: Job[];
-  applications: RecruitmentRecord[];
-  employers: RecruitmentRecord[];
-  talent: RecruitmentRecord[];
-  activity: Activity[];
-  messages: Message[];
-};
-
-const emptyJob = {
-  title: "",
-  slug: "",
-  department: "",
-  industry: "",
-  location: "",
-  work_model: "",
-  employment_type: "",
-  salary_range: "",
-  short_summary: "",
-  description: "",
-  responsibilities: "",
-  requirements: "",
-  preferred_qualifications: "",
-  application_deadline: "",
-  status: "closed",
-  featured: false,
-};
-
-function slugify(value: string) {
-  return value.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-");
+export default function AdminWorkspaceClient({jobs,applications,employers,talent,activity,messages}:Props){
+ const[section,setSection]=useState<Section>("overview"),[mobileMenu,setMobileMenu]=useState(false),[alertsOpen,setAlertsOpen]=useState(false),[query,setQuery]=useState(""),[jobRows,setJobRows]=useState(jobs),[applicationRows,setApplicationRows]=useState(applications),[employerRows,setEmployerRows]=useState(employers),[talentRows,setTalentRows]=useState(talent),[drawer,setDrawer]=useState<Drawer>(null),[candidateView,setCandidateView]=useState<"table"|"board">("table"),[statusFilter,setStatusFilter]=useState(""),[toast,setToast]=useState<Toast>(null);
+ useEffect(()=>{try{const saved=JSON.parse(localStorage.getItem(storageKey)||"{}") as {section?:Section;statusFilter?:string;candidateView?:"table"|"board"};if(saved.section&&validSections.includes(saved.section))setSection(saved.section);if(typeof saved.statusFilter==="string")setStatusFilter(saved.statusFilter);if(saved.candidateView==="table"||saved.candidateView==="board")setCandidateView(saved.candidateView)}catch{}},[]);
+ useEffect(()=>{localStorage.setItem(storageKey,JSON.stringify({section,statusFilter,candidateView}))},[section,statusFilter,candidateView]);
+ useEffect(()=>{if(!toast)return;const timer=window.setTimeout(()=>setToast(null),3200);return()=>window.clearTimeout(timer)},[toast]);
+ const q=query.trim().toLowerCase(),expiredJobs=jobRows.filter(isExpired),newApplications=applicationRows.filter(i=>(i.status||"new")==="new"),newEmployers=employerRows.filter(i=>(i.status||"new")==="new"),newTalent=talentRows.filter(i=>(i.status||"new")==="new");
+ const alertItems=[{section:"candidates" as Section,label:"Applications awaiting screening",count:newApplications.length,filter:"new"},{section:"employers" as Section,label:"Employer requests not contacted",count:newEmployers.length,filter:"new"},{section:"jobs" as Section,label:"Expired job deadlines",count:expiredJobs.length,filter:"expired"},{section:"talent" as Section,label:"Talent profiles awaiting review",count:newTalent.length,filter:"new"}],alertCount=alertItems.reduce((sum,item)=>sum+item.count,0);
+ const nav=[["overview","Overview",0],["jobs","Jobs",expiredJobs.length],["candidates","Candidates",newApplications.length],["employers","Employer requests",newEmployers.length],["talent","Talent network",newTalent.length],["activity","Activity",0],["messages","Messages",messages.length],["settings","Settings",0]] as const;
+ function selectSection(next:Section,filter=""){setSection(next);setStatusFilter(filter);setMobileMenu(false);setAlertsOpen(false)}
+ const globalMatches=useMemo(()=>{if(!q)return[];const r:Array<{section:Section;label:string;detail:string}>=[];jobRows.forEach(j=>{if([j.title,j.slug,j.location,j.department].join(" ").toLowerCase().includes(q))r.push({section:"jobs",label:j.title||"Untitled job",detail:j.location||"Job posting"})});applicationRows.forEach(i=>{if([i.full_name,i.email,i.job_title_snapshot].join(" ").toLowerCase().includes(q))r.push({section:"candidates",label:i.full_name||"Candidate",detail:i.job_title_snapshot||i.email||"Application"})});employerRows.forEach(i=>{if([i.company_name,i.contact_name,i.email,i.job_roles].join(" ").toLowerCase().includes(q))r.push({section:"employers",label:i.company_name||"Employer",detail:i.job_roles||i.contact_name||"Request"})});talentRows.forEach(i=>{if([i.full_name,i.email,i.target_roles].join(" ").toLowerCase().includes(q))r.push({section:"talent",label:i.full_name||"Talent profile",detail:i.target_roles||i.email||"Profile"})});return r.slice(0,8)},[q,jobRows,applicationRows,employerRows,talentRows]);
+ return <div className="admin-workspace min-h-screen bg-slate-100 text-slate-900">
+  <aside className={`${mobileMenu?"fixed inset-0 z-50 flex":"hidden"} lg:fixed lg:inset-y-0 lg:left-0 lg:z-30 lg:flex lg:w-72`}><button aria-label="Close navigation" className="absolute inset-0 bg-slate-950/50 backdrop-blur-sm lg:hidden" onClick={()=>setMobileMenu(false)}/><div className="relative flex h-full w-[min(20rem,88vw)] flex-col overflow-y-auto bg-slate-950 px-5 py-6 text-white shadow-2xl lg:w-72"><div className="flex items-center justify-between"><div><p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-300">Circle Wave</p><p className="mt-1 text-xl font-bold">Admin workspace</p></div><button aria-label="Close menu" className="rounded-lg p-2 text-xl text-slate-300 hover:bg-white/10 lg:hidden" onClick={()=>setMobileMenu(false)}>×</button></div><nav className="mt-8 grid gap-1" aria-label="Admin navigation">{nav.map(([key,label,badge])=><button key={key} onClick={()=>selectSection(key)} className={`flex items-center justify-between rounded-xl px-4 py-3 text-left text-sm font-semibold transition ${section===key?"bg-blue-600 text-white":"text-slate-300 hover:bg-white/10 hover:text-white"}`}><span>{label}</span>{badge>0&&<span className="min-w-6 rounded-full bg-white/15 px-2 py-0.5 text-center text-xs">{badge}</span>}</button>)}</nav><div className="mt-auto grid gap-2 border-t border-white/10 pt-5"><Link href="/" className="rounded-xl px-4 py-3 text-sm font-semibold text-slate-300 hover:bg-white/10 hover:text-white">View website</Link><button onClick={async()=>{await fetch("/api/admin-logout",{method:"POST"});window.location.href="/admin/login"}} className="rounded-xl px-4 py-3 text-left text-sm font-semibold text-slate-300 hover:bg-white/10 hover:text-white">Log out</button></div></div></aside>
+  <div className="min-w-0 lg:pl-72"><header className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur"><div className="flex min-h-16 items-center gap-2 px-3 sm:gap-4 sm:px-6 lg:px-8"><button aria-label="Open navigation" className="rounded-xl border border-slate-200 px-3 py-2 font-semibold lg:hidden" onClick={()=>setMobileMenu(true)}>Menu</button><div className="relative min-w-0 flex-1"><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search jobs, candidates, companies, emails…" className="input w-full max-w-2xl"/>{q&&<div className="absolute left-0 top-full z-30 mt-2 w-full max-w-2xl rounded-2xl border border-slate-200 bg-white p-2 shadow-xl">{globalMatches.length?globalMatches.map((item,index)=><button key={`${item.section}-${index}`} onClick={()=>{selectSection(item.section);setQuery("")}} className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-left hover:bg-slate-50"><span><strong className="block text-sm">{item.label}</strong><span className="text-xs text-slate-500">{item.detail}</span></span><span className="text-xs font-semibold uppercase text-blue-600">{item.section}</span></button>):<p className="px-4 py-3 text-sm text-slate-500">No matching records.</p>}</div>}</div><div className="relative"><button aria-expanded={alertsOpen} onClick={()=>setAlertsOpen(v=>!v)} className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold">Alerts<span className="ml-2 rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-700">{alertCount}</span></button>{alertsOpen&&<div className="absolute right-0 top-full z-40 mt-2 w-80 max-w-[calc(100vw-1.5rem)] rounded-2xl border border-slate-200 bg-white p-3 shadow-xl"><div className="flex items-center justify-between px-2 py-1"><strong>Needs attention</strong><button onClick={()=>selectSection("overview")} className="text-xs font-semibold text-blue-600">View overview</button></div><div className="mt-2 grid gap-1">{alertItems.map(item=><button key={item.label} disabled={!item.count} onClick={()=>selectSection(item.section,item.filter)} className="flex items-center justify-between rounded-xl px-3 py-3 text-left text-sm hover:bg-slate-50 disabled:cursor-default disabled:opacity-50"><span>{item.label}</span><span className="rounded-full bg-amber-100 px-2 py-0.5 font-bold text-amber-800">{item.count}</span></button>)}</div></div>}</div></div></header>
+   <main className="p-4 sm:p-6 lg:p-8">{section==="overview"&&<Overview jobs={jobRows} applications={applicationRows} employers={employerRows} talent={talentRows} activity={activity} onNavigate={selectSection}/>} {section==="jobs"&&<JobsWorkspace rows={jobRows} setRows={setJobRows} query={q} statusFilter={statusFilter} setStatusFilter={setStatusFilter} openEditor={record=>setDrawer({kind:"job",record})} notify={setToast}/>} {section==="candidates"&&<RecruitmentWorkspace title="Candidates" rows={applicationRows} statuses={applicationStatuses} query={q} statusFilter={statusFilter} setStatusFilter={setStatusFilter} view={candidateView} setView={setCandidateView} openRecord={record=>setDrawer({kind:"record",entity:"job_application",record})}/>} {section==="employers"&&<RecruitmentWorkspace title="Employer requests" rows={employerRows} statuses={employerStatuses} query={q} statusFilter={statusFilter} setStatusFilter={setStatusFilter} openRecord={record=>setDrawer({kind:"record",entity:"employer_request",record})}/>} {section==="talent"&&<RecruitmentWorkspace title="Talent network" rows={talentRows} statuses={talentStatuses} query={q} statusFilter={statusFilter} setStatusFilter={setStatusFilter} openRecord={record=>setDrawer({kind:"record",entity:"talent_network",record})}/>} {section==="activity"&&<ActivityWorkspace rows={activity}/>} {section==="messages"&&<MessagesWorkspace rows={messages} query={q}/>} {section==="settings"&&<SettingsWorkspace/>}</main>
+  </div>
+  {drawer?.kind==="job"&&<JobDrawer record={drawer.record} onClose={()=>setDrawer(null)} onSaved={record=>{setJobRows(cur=>cur.some(i=>i.id===record.id)?cur.map(i=>i.id===record.id?record:i):[record,...cur]);setDrawer(null);setToast({kind:"success",message:record.status==="open"?"Job saved and activated.":"Job saved as inactive."})}}/>}
+  {drawer?.kind==="record"&&<RecordDrawer entity={drawer.entity} record={drawer.record} onClose={()=>setDrawer(null)} onSaved={updated=>{const setter=drawer.entity==="job_application"?setApplicationRows:drawer.entity==="employer_request"?setEmployerRows:setTalentRows;setter(cur=>cur.map(i=>i.id===updated.id?updated:i));setDrawer(null);setToast({kind:"success",message:"Recruitment record updated."})}}/>}
+  {toast&&<div role="status" className={`fixed bottom-5 right-5 z-[70] max-w-sm rounded-2xl px-5 py-4 text-sm font-semibold text-white shadow-2xl ${toast.kind==="success"?"bg-emerald-600":"bg-red-600"}`}>{toast.message}</div>}
+ </div>
 }
 
-function date(value?: string | null) {
-  return value ? new Date(value).toLocaleDateString() : "—";
-}
+function PageHeading({eyebrow,title,description,action}:{eyebrow:string;title:string;description:string;action?:React.ReactNode}){return <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between"><div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-600">{eyebrow}</p><h1 className="mt-2 text-3xl font-bold tracking-tight">{title}</h1><p className="mt-2 max-w-3xl text-slate-600">{description}</p></div>{action}</div>}
+function Stat({label,value,hint}:{label:string;value:number;hint:string}){return <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><p className="text-sm font-semibold text-slate-500">{label}</p><p className="mt-2 text-3xl font-bold">{value}</p><p className="mt-1 text-xs text-slate-500">{hint}</p></div>}
+function EmptyState({title,description,clear}:{title:string;description:string;clear?:()=>void}){return <div className="p-10 text-center"><div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-xl">○</div><h3 className="mt-4 font-bold">{title}</h3><p className="mx-auto mt-2 max-w-md text-sm text-slate-500">{description}</p>{clear&&<button onClick={clear} className="mt-4 rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold">Clear filters</button>}</div>}
+function Overview({jobs,applications,employers,talent,activity,onNavigate}:{jobs:Job[];applications:RecruitmentRecord[];employers:RecruitmentRecord[];talent:RecruitmentRecord[];activity:Activity[];onNavigate:(s:Section,f?:string)=>void}){const active=jobs.filter(i=>i.status==="open"&&!isExpired(i)).length,actions=[{label:"Applications awaiting screening",value:applications.filter(i=>(i.status||"new")==="new").length,section:"candidates" as Section,filter:"new"},{label:"Employer requests not contacted",value:employers.filter(i=>(i.status||"new")==="new").length,section:"employers" as Section,filter:"new"},{label:"Expired job deadlines",value:jobs.filter(isExpired).length,section:"jobs" as Section,filter:"expired"},{label:"Talent profiles awaiting review",value:talent.filter(i=>(i.status||"new")==="new").length,section:"talent" as Section,filter:"new"}];return <div className="grid gap-8"><PageHeading eyebrow="Overview" title="Good to see you" description="Monitor recruitment activity, publishing health, and the queues that need attention." action={<button onClick={()=>onNavigate("jobs")} className="rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white">Create or manage jobs</button>}/><div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"><Stat label="Active jobs" value={active} hint="Visible on the public jobs page"/><Stat label="New applications" value={applications.filter(i=>(i.status||"new")==="new").length} hint="Awaiting first review"/><Stat label="Open employer requests" value={employers.filter(i=>!["closed","lost"].includes(i.status||"new")).length} hint="Across the employer pipeline"/><Stat label="Talent profiles" value={talent.length} hint="Registered candidates"/></div><div className="grid gap-6 xl:grid-cols-[1.1fr_.9fr]"><section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><h2 className="text-xl font-bold">Needs attention</h2><div className="mt-4 divide-y divide-slate-100">{actions.map(i=><button key={i.label} onClick={()=>onNavigate(i.section,i.filter)} className="flex w-full items-center justify-between py-4 text-left hover:text-blue-700"><span className="font-medium">{i.label}</span><span className={`rounded-full px-3 py-1 text-sm font-bold ${i.value?"bg-amber-100 text-amber-800":"bg-green-100 text-green-800"}`}>{i.value}</span></button>)}</div></section><section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><h2 className="text-xl font-bold">Recent activity</h2><div className="mt-4 grid gap-4">{activity.slice(0,6).map(i=><div key={i.id} className="border-l-2 border-blue-200 pl-4"><p className="text-sm font-semibold">{i.note||i.action||"Recruitment update"}</p><p className="mt-1 text-xs text-slate-500">{dateTime(i.created_at)} · {i.entity_type||"record"}</p></div>)}{!activity.length&&<p className="text-sm text-slate-500">No activity recorded yet.</p>}</div></section></div></div>}
 
-function dateTime(value?: string | null) {
-  return value ? new Date(value).toLocaleString() : "—";
-}
+function JobsWorkspace({rows,setRows,query,statusFilter,setStatusFilter,openEditor,notify}:{rows:Job[];setRows:React.Dispatch<React.SetStateAction<Job[]>>;query:string;statusFilter:string;setStatusFilter:(v:string)=>void;openEditor:(j:Job|null)=>void;notify:(t:Toast)=>void}){const[updatingId,setUpdatingId]=useState<string|null>(null),filtered=rows.filter(j=>{const text=[j.title,j.location,j.department,j.slug].join(" ").toLowerCase(),status=isExpired(j)?"expired":j.status==="open"?"active":"inactive";return(!query||text.includes(query))&&(!statusFilter||status===statusFilter)});async function toggle(job:Job){const next=job.status==="open"?"closed":"open";if(!window.confirm(`${next==="open"?"Activate":"Deactivate"} “${job.title||"this job"}”?`))return;setUpdatingId(job.id);const response=await fetch("/api/job-postings",{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({...jobForm(job),id:job.id,status:next,slug:slugify(job.slug||job.title||"")})}),result=await response.json().catch(()=>null);setUpdatingId(null);if(!response.ok)return notify({kind:"error",message:result?.error||"Unable to update job visibility."});setRows(cur=>cur.map(i=>i.id===job.id?{...i,status:next}:i));notify({kind:"success",message:next==="open"?"Job activated.":"Job set to inactive."})}return <div className="grid gap-6"><PageHeading eyebrow="Publishing" title="Jobs" description="Manage published, inactive, and expired roles without leaving the list." action={<div className="flex flex-wrap gap-3"><Link href="/jobs" target="_blank" className="rounded-xl border border-slate-300 bg-white px-4 py-3 font-semibold">View public jobs</Link><button onClick={()=>openEditor(null)} className="rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white">+ Create job</button></div>}/><div className="flex flex-wrap gap-2">{[["","All"],["active","Active"],["inactive","Inactive"],["expired","Expired"]].map(([v,l])=><button key={v} onClick={()=>setStatusFilter(v)} className={`rounded-full px-4 py-2 text-sm font-semibold ${statusFilter===v?"bg-slate-900 text-white":"border border-slate-200 bg-white"}`}>{l}</button>)}</div><div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">{filtered.length?<div className="overflow-x-auto"><table className="min-w-full text-sm"><thead className="sticky top-0 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-4 py-3">Job</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Location</th><th className="px-4 py-3">Deadline</th><th className="px-4 py-3">Featured</th><th className="px-4 py-3 text-right">Actions</th></tr></thead><tbody className="divide-y divide-slate-100">{filtered.map(j=>{const expired=isExpired(j),active=j.status==="open"&&!expired,updating=updatingId===j.id;return <tr key={j.id} className="hover:bg-slate-50"><td className="px-4 py-3"><p className="font-semibold">{j.title||"Untitled job"}</p><p className="text-xs text-slate-500">/{j.slug}</p></td><td className="px-4 py-3"><span className={`rounded-full px-3 py-1 text-xs font-bold ${expired?"bg-red-100 text-red-700":active?"bg-green-100 text-green-700":"bg-slate-200 text-slate-700"}`}>{expired?"Expired":active?"Active":"Inactive"}</span></td><td className="px-4 py-3">{j.location||"—"}</td><td className="px-4 py-3">{date(j.application_deadline)}</td><td className="px-4 py-3">{j.featured?"Yes":"No"}</td><td className="px-4 py-3"><div className="flex justify-end gap-2"><button onClick={()=>openEditor(j)} className="rounded-lg border border-slate-300 px-3 py-2 font-semibold">Edit</button>{active&&j.slug&&<Link href={`/jobs/${j.slug}`} target="_blank" className="rounded-lg border border-slate-300 px-3 py-2 font-semibold">View</Link>}<button disabled={updating} onClick={()=>toggle(j)} className={`rounded-lg px-3 py-2 font-semibold text-white disabled:opacity-60 ${j.status==="open"?"bg-slate-700":"bg-green-600"}`}>{updating?"Updating…":j.status==="open"?"Set inactive":"Set active"}</button></div></td></tr>})}</tbody></table></div>:<EmptyState title="No jobs found" description="No jobs match the current search and status filters." clear={query||statusFilter?()=>setStatusFilter(""):undefined}/>}</div></div>}
 
-function isExpired(job: Job) {
-  return Boolean(job.application_deadline && job.application_deadline < new Date().toISOString().slice(0, 10));
-}
+function RecruitmentWorkspace({title,rows,statuses,query,statusFilter,setStatusFilter,view="table",setView,openRecord}:{title:string;rows:RecruitmentRecord[];statuses:readonly string[];query:string;statusFilter:string;setStatusFilter:(v:string)=>void;view?:"table"|"board";setView?:(v:"table"|"board")=>void;openRecord:(r:RecruitmentRecord)=>void}){const filtered=rows.filter(i=>{const text=[i.full_name,i.email,i.company_name,i.contact_name,i.job_title_snapshot,i.job_roles,i.target_roles].join(" ").toLowerCase();return(!query||text.includes(query))&&(!statusFilter||(i.status||"new")===statusFilter)}),primary=(i:RecruitmentRecord)=>i.company_name||i.full_name||"Untitled record",secondary=(i:RecruitmentRecord)=>i.job_roles||i.job_title_snapshot||i.target_roles||i.email||"—";return <div className="grid gap-6"><PageHeading eyebrow="Recruitment operations" title={title} description={`Search, review, update status, and record private notes for ${title.toLowerCase()}.`} action={setView&&<div className="rounded-xl border border-slate-200 bg-white p-1"><button onClick={()=>setView("table")} className={`rounded-lg px-4 py-2 text-sm font-semibold ${view==="table"?"bg-slate-900 text-white":""}`}>Table</button><button onClick={()=>setView("board")} className={`rounded-lg px-4 py-2 text-sm font-semibold ${view==="board"?"bg-slate-900 text-white":""}`}>Board</button></div>}/><div className="flex flex-wrap gap-2"><button onClick={()=>setStatusFilter("")} className={`rounded-full px-4 py-2 text-sm font-semibold ${!statusFilter?"bg-slate-900 text-white":"border border-slate-200 bg-white"}`}>All</button>{statuses.map(s=><button key={s} onClick={()=>setStatusFilter(s)} className={`rounded-full px-4 py-2 text-sm font-semibold ${statusFilter===s?"bg-slate-900 text-white":"border border-slate-200 bg-white"}`}>{humanizeStatus(s)}</button>)}</div>{!filtered.length?<div className="rounded-2xl border border-slate-200 bg-white shadow-sm"><EmptyState title={`No matching ${title.toLowerCase()}`} description="Try another search or clear the active status filter." clear={query||statusFilter?()=>setStatusFilter(""):undefined}/></div>:view==="board"?<div className="grid auto-cols-[minmax(270px,1fr)] grid-flow-col gap-4 overflow-x-auto pb-4">{statuses.map(s=>{const lane=filtered.filter(i=>(i.status||"new")===s);return <section key={s} className="min-h-48 rounded-2xl border border-slate-200 bg-slate-200/70 p-3"><div className="flex items-center justify-between px-1 py-2"><h2 className="font-bold">{humanizeStatus(s)}</h2><span className="rounded-full bg-white px-2 py-1 text-xs font-bold">{lane.length}</span></div><div className="grid gap-3">{lane.map(i=><button key={i.id} onClick={()=>openRecord(i)} className="rounded-xl border border-transparent bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md"><p className="font-semibold">{primary(i)}</p><p className="mt-1 text-sm text-slate-500">{secondary(i)}</p><div className="mt-3 flex items-center justify-between text-xs text-slate-400"><span>{date(i.created_at)}</span>{i.location&&<span>{i.location}</span>}</div></button>)}{!lane.length&&<p className="rounded-xl border border-dashed border-slate-300 p-4 text-center text-xs text-slate-500">No records in this stage</p>}</div></section>})}</div>:<div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"><div className="overflow-x-auto"><table className="min-w-full text-sm"><thead className="sticky top-0 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-4 py-3">Name</th><th className="px-4 py-3">Role / request</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Received</th><th className="px-4 py-3 text-right">Action</th></tr></thead><tbody className="divide-y divide-slate-100">{filtered.map(i=><tr key={i.id} className="hover:bg-slate-50"><td className="px-4 py-3"><p className="font-semibold">{primary(i)}</p><p className="text-xs text-slate-500">{i.email||i.contact_name||"—"}</p></td><td className="px-4 py-3">{secondary(i)}</td><td className="px-4 py-3"><span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">{humanizeStatus(i.status||"new")}</span></td><td className="px-4 py-3">{date(i.created_at)}</td><td className="px-4 py-3 text-right"><button onClick={()=>openRecord(i)} className="rounded-lg border border-slate-300 px-3 py-2 font-semibold">Open</button></td></tr>)}</tbody></table></div></div>}</div>}
+function ActivityWorkspace({rows}:{rows:Activity[]}){return <div className="grid gap-6"><PageHeading eyebrow="Audit history" title="Activity" description="Review recent pipeline and note changes across recruitment operations."/><div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><div className="grid gap-5">{rows.map(i=><div key={i.id} className="grid gap-2 border-l-2 border-blue-200 pl-4 sm:grid-cols-[1fr_auto]"><div><p className="font-semibold">{i.note||i.action||"Recruitment update"}</p><p className="mt-1 text-sm text-slate-500">{i.entity_type} · {i.entity_id}</p>{i.previous_value!==i.new_value&&<p className="mt-1 text-sm text-slate-600">{i.previous_value||"—"} → {i.new_value||"—"}</p>}</div><time className="text-xs text-slate-500">{dateTime(i.created_at)}</time></div>)}{!rows.length&&<EmptyState title="No activity yet" description="Recruitment updates will appear here as records are reviewed."/>}</div></div></div>}
+function MessagesWorkspace({rows,query}:{rows:Message[];query:string}){const filtered=rows.filter(i=>!query||[i.full_name,i.email,i.company,i.subject,i.message].join(" ").toLowerCase().includes(query));return <div className="grid gap-6"><PageHeading eyebrow="Inbox" title="Messages" description="Review contact-form messages and follow up from your preferred email client."/><div className="grid gap-4">{filtered.map(i=><article key={i.id} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"><div><h2 className="text-lg font-bold">{i.subject||"Contact message"}</h2><p className="mt-1 text-sm text-slate-500">{i.full_name||"Unknown sender"} · {i.company||"No company"}</p></div><a href={`mailto:${i.email||""}`} className="rounded-lg bg-blue-600 px-4 py-2 text-center text-sm font-semibold text-white">Reply by email</a></div><p className="mt-4 whitespace-pre-wrap text-sm leading-7 text-slate-700">{i.message||"—"}</p><p className="mt-4 text-xs text-slate-400">{dateTime(i.created_at)} · {i.email}</p></article>)}{!filtered.length&&<div className="rounded-2xl border border-slate-200 bg-white"><EmptyState title="No matching messages" description="Try a different search term."/></div>}</div></div>}
+function SettingsWorkspace(){return <div className="grid gap-6"><PageHeading eyebrow="Administration" title="Settings" description="Quick links for the current single-admin configuration."/><div className="grid gap-4 md:grid-cols-2"><section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><h2 className="text-lg font-bold">Public website</h2><p className="mt-2 text-sm text-slate-600">Review the candidate-facing experience and published openings.</p><div className="mt-5 flex flex-wrap gap-3"><Link href="/" target="_blank" className="rounded-xl border border-slate-300 px-4 py-2 font-semibold">Open homepage</Link><Link href="/jobs" target="_blank" className="rounded-xl border border-slate-300 px-4 py-2 font-semibold">Open jobs</Link></div></section><section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><h2 className="text-lg font-bold">Session</h2><p className="mt-2 text-sm text-slate-600">The dashboard currently uses the secure single-admin session.</p><button onClick={async()=>{await fetch("/api/admin-logout",{method:"POST"});window.location.href="/admin/login"}} className="mt-5 rounded-xl bg-slate-900 px-4 py-2 font-semibold text-white">Log out</button></section></div></div>}
 
-function jobForm(job: Job | null) {
-  if (!job) return { ...emptyJob };
-  return {
-    title: job.title ?? "",
-    slug: job.slug ?? "",
-    department: job.department ?? "",
-    industry: job.industry ?? "",
-    location: job.location ?? "",
-    work_model: job.work_model ?? "",
-    employment_type: job.employment_type ?? "",
-    salary_range: job.salary_range ?? "",
-    short_summary: job.short_summary ?? "",
-    description: job.description ?? "",
-    responsibilities: job.responsibilities ?? "",
-    requirements: job.requirements ?? "",
-    preferred_qualifications: job.preferred_qualifications ?? "",
-    application_deadline: job.application_deadline ?? "",
-    status: job.status === "open" ? "open" : "closed",
-    featured: Boolean(job.featured),
-  };
-}
-
-export default function AdminWorkspaceClient({ jobs, applications, employers, talent, activity, messages }: Props) {
-  const [section, setSection] = useState<Section>("overview");
-  const [mobileMenu, setMobileMenu] = useState(false);
-  const [query, setQuery] = useState("");
-  const [jobRows, setJobRows] = useState(jobs);
-  const [applicationRows, setApplicationRows] = useState(applications);
-  const [employerRows, setEmployerRows] = useState(employers);
-  const [talentRows, setTalentRows] = useState(talent);
-  const [drawer, setDrawer] = useState<Drawer>(null);
-  const [candidateView, setCandidateView] = useState<"table" | "board">("table");
-  const [statusFilter, setStatusFilter] = useState("");
-
-  const q = query.trim().toLowerCase();
-  const activeJobs = jobRows.filter((job) => job.status === "open" && !isExpired(job));
-  const inactiveJobs = jobRows.filter((job) => job.status !== "open");
-  const expiredJobs = jobRows.filter(isExpired);
-  const newApplications = applicationRows.filter((item) => (item.status || "new") === "new");
-  const newEmployers = employerRows.filter((item) => (item.status || "new") === "new");
-  const newTalent = talentRows.filter((item) => (item.status || "new") === "new");
-
-  const nav = [
-    ["overview", "Overview", 0],
-    ["jobs", "Jobs", expiredJobs.length],
-    ["candidates", "Candidates", newApplications.length],
-    ["employers", "Employer requests", newEmployers.length],
-    ["talent", "Talent network", newTalent.length],
-    ["activity", "Activity", 0],
-    ["messages", "Messages", messages.length],
-    ["settings", "Settings", 0],
-  ] as const;
-
-  function selectSection(next: Section) {
-    setSection(next);
-    setStatusFilter("");
-    setMobileMenu(false);
-  }
-
-  const globalMatches = useMemo(() => {
-    if (!q) return [];
-    const results: Array<{ section: Section; label: string; detail: string }> = [];
-    jobRows.forEach((job) => {
-      if ([job.title, job.slug, job.location, job.department].join(" ").toLowerCase().includes(q)) {
-        results.push({ section: "jobs", label: job.title || "Untitled job", detail: job.location || "Job posting" });
-      }
-    });
-    applicationRows.forEach((item) => {
-      if ([item.full_name, item.email, item.job_title_snapshot].join(" ").toLowerCase().includes(q)) {
-        results.push({ section: "candidates", label: item.full_name || "Candidate", detail: item.job_title_snapshot || item.email || "Application" });
-      }
-    });
-    employerRows.forEach((item) => {
-      if ([item.company_name, item.contact_name, item.email, item.job_roles].join(" ").toLowerCase().includes(q)) {
-        results.push({ section: "employers", label: item.company_name || "Employer", detail: item.job_roles || item.contact_name || "Request" });
-      }
-    });
-    talentRows.forEach((item) => {
-      if ([item.full_name, item.email, item.target_roles].join(" ").toLowerCase().includes(q)) {
-        results.push({ section: "talent", label: item.full_name || "Talent profile", detail: item.target_roles || item.email || "Profile" });
-      }
-    });
-    return results.slice(0, 8);
-  }, [q, jobRows, applicationRows, employerRows, talentRows]);
-
-  return (
-    <div className="min-h-screen bg-slate-100 text-slate-900">
-      <aside className={`${mobileMenu ? "fixed inset-0 z-50 flex" : "hidden"} lg:fixed lg:inset-y-0 lg:left-0 lg:z-30 lg:flex lg:w-72`}>
-        <button aria-label="Close navigation" className="absolute inset-0 bg-slate-950/40 lg:hidden" onClick={() => setMobileMenu(false)} />
-        <div className="relative flex h-full w-72 flex-col bg-slate-950 px-5 py-6 text-white shadow-2xl">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-300">Circle Wave</p>
-              <p className="mt-1 text-xl font-bold">Admin workspace</p>
-            </div>
-            <button className="rounded-lg p-2 text-slate-300 hover:bg-white/10 lg:hidden" onClick={() => setMobileMenu(false)}>×</button>
-          </div>
-          <nav className="mt-8 grid gap-1">
-            {nav.map(([key, label, badge]) => (
-              <button key={key} onClick={() => selectSection(key)} className={`flex items-center justify-between rounded-xl px-4 py-3 text-left text-sm font-semibold transition ${section === key ? "bg-blue-600 text-white" : "text-slate-300 hover:bg-white/10 hover:text-white"}`}>
-                <span>{label}</span>
-                {badge > 0 && <span className="min-w-6 rounded-full bg-white/15 px-2 py-0.5 text-center text-xs">{badge}</span>}
-              </button>
-            ))}
-          </nav>
-          <div className="mt-auto grid gap-2 border-t border-white/10 pt-5">
-            <Link href="/" className="rounded-xl px-4 py-3 text-sm font-semibold text-slate-300 hover:bg-white/10 hover:text-white">View website</Link>
-            <button onClick={async () => { await fetch("/api/admin-logout", { method: "POST" }); window.location.href = "/admin/login"; }} className="rounded-xl px-4 py-3 text-left text-sm font-semibold text-slate-300 hover:bg-white/10 hover:text-white">Log out</button>
-          </div>
-        </div>
-      </aside>
-
-      <div className="lg:pl-72">
-        <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur">
-          <div className="flex min-h-16 items-center gap-4 px-4 sm:px-6 lg:px-8">
-            <button className="rounded-xl border border-slate-200 px-3 py-2 font-semibold lg:hidden" onClick={() => setMobileMenu(true)}>Menu</button>
-            <div className="relative flex-1">
-              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search jobs, candidates, companies, emails…" className="input w-full max-w-2xl" />
-              {q && globalMatches.length > 0 && (
-                <div className="absolute left-0 top-full z-30 mt-2 w-full max-w-2xl rounded-2xl border border-slate-200 bg-white p-2 shadow-xl">
-                  {globalMatches.map((item, index) => (
-                    <button key={`${item.section}-${index}`} onClick={() => { selectSection(item.section); setQuery(""); }} className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-left hover:bg-slate-50">
-                      <span><strong className="block text-sm">{item.label}</strong><span className="text-xs text-slate-500">{item.detail}</span></span>
-                      <span className="text-xs font-semibold uppercase text-blue-600">{item.section}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-            <button className="relative rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold" title="Action items">Alerts<span className="ml-2 rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-700">{expiredJobs.length + newApplications.length + newEmployers.length}</span></button>
-          </div>
-        </header>
-
-        <main className="p-4 sm:p-6 lg:p-8">
-          {section === "overview" && <Overview jobs={jobRows} applications={applicationRows} employers={employerRows} talent={talentRows} activity={activity} onNavigate={selectSection} />}
-          {section === "jobs" && <JobsWorkspace rows={jobRows} setRows={setJobRows} query={q} statusFilter={statusFilter} setStatusFilter={setStatusFilter} openEditor={(record) => setDrawer({ kind: "job", record })} />}
-          {section === "candidates" && <RecruitmentWorkspace title="Candidates" entity="job_application" rows={applicationRows} statuses={applicationStatuses} query={q} statusFilter={statusFilter} setStatusFilter={setStatusFilter} view={candidateView} setView={setCandidateView} openRecord={(record) => setDrawer({ kind: "record", entity: "job_application", record })} />}
-          {section === "employers" && <RecruitmentWorkspace title="Employer requests" entity="employer_request" rows={employerRows} statuses={employerStatuses} query={q} statusFilter={statusFilter} setStatusFilter={setStatusFilter} openRecord={(record) => setDrawer({ kind: "record", entity: "employer_request", record })} />}
-          {section === "talent" && <RecruitmentWorkspace title="Talent network" entity="talent_network" rows={talentRows} statuses={talentStatuses} query={q} statusFilter={statusFilter} setStatusFilter={setStatusFilter} openRecord={(record) => setDrawer({ kind: "record", entity: "talent_network", record })} />}
-          {section === "activity" && <ActivityWorkspace rows={activity} />}
-          {section === "messages" && <MessagesWorkspace rows={messages} query={q} />}
-          {section === "settings" && <SettingsWorkspace />}
-        </main>
-      </div>
-
-      {drawer?.kind === "job" && <JobDrawer record={drawer.record} onClose={() => setDrawer(null)} onSaved={(record) => { setJobRows((current) => { const exists = current.some((item) => item.id === record.id); return exists ? current.map((item) => item.id === record.id ? record : item) : [record, ...current]; }); setDrawer(null); }} />}
-      {drawer?.kind === "record" && <RecordDrawer entity={drawer.entity} record={drawer.record} onClose={() => setDrawer(null)} onSaved={(updated) => { const setter = drawer.entity === "job_application" ? setApplicationRows : drawer.entity === "employer_request" ? setEmployerRows : setTalentRows; setter((current) => current.map((item) => item.id === updated.id ? updated : item)); setDrawer(null); }} />}
-    </div>
-  );
-}
-
-function PageHeading({ eyebrow, title, description, action }: { eyebrow: string; title: string; description: string; action?: React.ReactNode }) {
-  return <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between"><div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-600">{eyebrow}</p><h1 className="mt-2 text-3xl font-bold tracking-tight">{title}</h1><p className="mt-2 max-w-3xl text-slate-600">{description}</p></div>{action}</div>;
-}
-
-function Stat({ label, value, hint }: { label: string; value: number; hint: string }) {
-  return <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><p className="text-sm font-semibold text-slate-500">{label}</p><p className="mt-2 text-3xl font-bold">{value}</p><p className="mt-1 text-xs text-slate-500">{hint}</p></div>;
-}
-
-function Overview({ jobs, applications, employers, talent, activity, onNavigate }: { jobs: Job[]; applications: RecruitmentRecord[]; employers: RecruitmentRecord[]; talent: RecruitmentRecord[]; activity: Activity[]; onNavigate: (section: Section) => void }) {
-  const active = jobs.filter((item) => item.status === "open" && !isExpired(item)).length;
-  const actionItems = [
-    { label: "Applications awaiting screening", value: applications.filter((item) => (item.status || "new") === "new").length, section: "candidates" as Section },
-    { label: "Employer requests not contacted", value: employers.filter((item) => (item.status || "new") === "new").length, section: "employers" as Section },
-    { label: "Expired job deadlines", value: jobs.filter(isExpired).length, section: "jobs" as Section },
-    { label: "Talent profiles awaiting review", value: talent.filter((item) => (item.status || "new") === "new").length, section: "talent" as Section },
-  ];
-  return <div className="grid gap-8"><PageHeading eyebrow="Overview" title="Good to see you" description="Monitor recruitment activity, publishing health, and the queues that need attention." action={<button onClick={() => onNavigate("jobs")} className="rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700">Create or manage jobs</button>} />
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"><Stat label="Active jobs" value={active} hint="Visible on the public jobs page" /><Stat label="New applications" value={applications.filter((item) => (item.status || "new") === "new").length} hint="Awaiting first review" /><Stat label="Open employer requests" value={employers.filter((item) => !["closed", "lost"].includes(item.status || "new")).length} hint="Across the employer pipeline" /><Stat label="Talent profiles" value={talent.length} hint="Registered candidates" /></div>
-    <div className="grid gap-6 xl:grid-cols-[1.1fr_.9fr]"><section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><h2 className="text-xl font-bold">Needs attention</h2><div className="mt-4 divide-y divide-slate-100">{actionItems.map((item) => <button key={item.label} onClick={() => onNavigate(item.section)} className="flex w-full items-center justify-between py-4 text-left hover:text-blue-700"><span className="font-medium">{item.label}</span><span className={`rounded-full px-3 py-1 text-sm font-bold ${item.value ? "bg-amber-100 text-amber-800" : "bg-green-100 text-green-800"}`}>{item.value}</span></button>)}</div></section>
-    <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><h2 className="text-xl font-bold">Recent activity</h2><div className="mt-4 grid gap-4">{activity.slice(0, 6).map((item) => <div key={item.id} className="border-l-2 border-blue-200 pl-4"><p className="text-sm font-semibold">{item.note || item.action || "Recruitment update"}</p><p className="mt-1 text-xs text-slate-500">{dateTime(item.created_at)} · {item.entity_type || "record"}</p></div>)}{activity.length === 0 && <p className="text-sm text-slate-500">No activity recorded yet.</p>}</div></section></div>
-  </div>;
-}
-
-function JobsWorkspace({ rows, setRows, query, statusFilter, setStatusFilter, openEditor }: { rows: Job[]; setRows: React.Dispatch<React.SetStateAction<Job[]>>; query: string; statusFilter: string; setStatusFilter: (value: string) => void; openEditor: (job: Job | null) => void }) {
-  const filtered = rows.filter((job) => {
-    const text = [job.title, job.location, job.department, job.slug].join(" ").toLowerCase();
-    const status = isExpired(job) ? "expired" : job.status === "open" ? "active" : "inactive";
-    return (!query || text.includes(query)) && (!statusFilter || status === statusFilter);
-  });
-  async function toggle(job: Job) {
-    const next = job.status === "open" ? "closed" : "open";
-    const response = await fetch("/api/job-postings", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...jobForm(job), id: job.id, status: next, slug: slugify(job.slug || job.title || "") }) });
-    const result = await response.json().catch(() => null);
-    if (!response.ok) return window.alert(result?.error || "Unable to update job visibility.");
-    setRows((current) => current.map((item) => item.id === job.id ? { ...item, status: next } : item));
-  }
-  return <div className="grid gap-6"><PageHeading eyebrow="Publishing" title="Jobs" description="Manage published, inactive, and expired roles without leaving the list." action={<div className="flex gap-3"><Link href="/jobs" target="_blank" className="rounded-xl border border-slate-300 bg-white px-4 py-3 font-semibold">View public jobs</Link><button onClick={() => openEditor(null)} className="rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white">+ Create job</button></div>} />
-    <div className="flex flex-wrap gap-2">{[["", "All"], ["active", "Active"], ["inactive", "Inactive"], ["expired", "Expired"]].map(([value, label]) => <button key={value} onClick={() => setStatusFilter(value)} className={`rounded-full px-4 py-2 text-sm font-semibold ${statusFilter === value ? "bg-slate-900 text-white" : "border border-slate-200 bg-white"}`}>{label}</button>)}</div>
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"><div className="overflow-x-auto"><table className="min-w-full text-sm"><thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-5 py-4">Job</th><th className="px-5 py-4">Status</th><th className="px-5 py-4">Location</th><th className="px-5 py-4">Deadline</th><th className="px-5 py-4">Featured</th><th className="px-5 py-4 text-right">Actions</th></tr></thead><tbody className="divide-y divide-slate-100">{filtered.map((job) => { const expired = isExpired(job); const active = job.status === "open" && !expired; return <tr key={job.id} className="hover:bg-slate-50"><td className="px-5 py-4"><p className="font-semibold">{job.title || "Untitled job"}</p><p className="text-xs text-slate-500">/{job.slug}</p></td><td className="px-5 py-4"><span className={`rounded-full px-3 py-1 text-xs font-bold ${expired ? "bg-red-100 text-red-700" : active ? "bg-green-100 text-green-700" : "bg-slate-200 text-slate-700"}`}>{expired ? "Expired" : active ? "Active" : "Inactive"}</span></td><td className="px-5 py-4">{job.location || "—"}</td><td className="px-5 py-4">{date(job.application_deadline)}</td><td className="px-5 py-4">{job.featured ? "Yes" : "No"}</td><td className="px-5 py-4"><div className="flex justify-end gap-2"><button onClick={() => openEditor(job)} className="rounded-lg border border-slate-300 px-3 py-2 font-semibold">Edit</button>{job.status === "open" && !expired && job.slug && <Link href={`/jobs/${job.slug}`} target="_blank" className="rounded-lg border border-slate-300 px-3 py-2 font-semibold">View</Link>}<button onClick={() => toggle(job)} className={`rounded-lg px-3 py-2 font-semibold text-white ${job.status === "open" ? "bg-slate-700" : "bg-green-600"}`}>{job.status === "open" ? "Set inactive" : "Set active"}</button></div></td></tr>; })}</tbody></table></div>{filtered.length === 0 && <p className="p-8 text-center text-slate-500">No jobs match the current filters.</p>}</div>
-  </div>;
-}
-
-function RecruitmentWorkspace({ title, entity, rows, statuses, query, statusFilter, setStatusFilter, view = "table", setView, openRecord }: { title: string; entity: RecruitmentEntityType; rows: RecruitmentRecord[]; statuses: readonly string[]; query: string; statusFilter: string; setStatusFilter: (value: string) => void; view?: "table" | "board"; setView?: (value: "table" | "board") => void; openRecord: (record: RecruitmentRecord) => void }) {
-  const filtered = rows.filter((item) => { const text = [item.full_name, item.email, item.company_name, item.contact_name, item.job_title_snapshot, item.job_roles, item.target_roles].join(" ").toLowerCase(); return (!query || text.includes(query)) && (!statusFilter || (item.status || "new") === statusFilter); });
-  const primary = (item: RecruitmentRecord) => item.company_name || item.full_name || "Untitled record";
-  const secondary = (item: RecruitmentRecord) => item.job_roles || item.job_title_snapshot || item.target_roles || item.email || "—";
-  return <div className="grid gap-6"><PageHeading eyebrow="Recruitment operations" title={title} description={`Search, review, update status, and record private notes for ${title.toLowerCase()}.`} action={setView && <div className="rounded-xl border border-slate-200 bg-white p-1"><button onClick={() => setView("table")} className={`rounded-lg px-4 py-2 text-sm font-semibold ${view === "table" ? "bg-slate-900 text-white" : ""}`}>Table</button><button onClick={() => setView("board")} className={`rounded-lg px-4 py-2 text-sm font-semibold ${view === "board" ? "bg-slate-900 text-white" : ""}`}>Board</button></div>} />
-    <div className="flex flex-wrap gap-2"><button onClick={() => setStatusFilter("")} className={`rounded-full px-4 py-2 text-sm font-semibold ${!statusFilter ? "bg-slate-900 text-white" : "border border-slate-200 bg-white"}`}>All</button>{statuses.map((status) => <button key={status} onClick={() => setStatusFilter(status)} className={`rounded-full px-4 py-2 text-sm font-semibold ${statusFilter === status ? "bg-slate-900 text-white" : "border border-slate-200 bg-white"}`}>{humanizeStatus(status)}</button>)}</div>
-    {view === "board" ? <div className="grid gap-4 overflow-x-auto pb-4" style={{ gridTemplateColumns: `repeat(${statuses.length}, minmax(260px, 1fr))` }}>{statuses.map((status) => <section key={status} className="rounded-2xl bg-slate-200/70 p-3"><div className="flex items-center justify-between px-1 py-2"><h2 className="font-bold">{humanizeStatus(status)}</h2><span className="rounded-full bg-white px-2 py-1 text-xs font-bold">{filtered.filter((item) => (item.status || "new") === status).length}</span></div><div className="grid gap-3">{filtered.filter((item) => (item.status || "new") === status).map((item) => <button key={item.id} onClick={() => openRecord(item)} className="rounded-xl bg-white p-4 text-left shadow-sm hover:shadow-md"><p className="font-semibold">{primary(item)}</p><p className="mt-1 text-sm text-slate-500">{secondary(item)}</p><p className="mt-3 text-xs text-slate-400">{date(item.created_at)}</p></button>)}</div></section>)}</div> : <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"><div className="overflow-x-auto"><table className="min-w-full text-sm"><thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-5 py-4">Name</th><th className="px-5 py-4">Role / request</th><th className="px-5 py-4">Status</th><th className="px-5 py-4">Received</th><th className="px-5 py-4 text-right">Action</th></tr></thead><tbody className="divide-y divide-slate-100">{filtered.map((item) => <tr key={item.id} className="hover:bg-slate-50"><td className="px-5 py-4"><p className="font-semibold">{primary(item)}</p><p className="text-xs text-slate-500">{item.email || item.contact_name || "—"}</p></td><td className="px-5 py-4">{secondary(item)}</td><td className="px-5 py-4"><span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">{humanizeStatus(item.status || "new")}</span></td><td className="px-5 py-4">{date(item.created_at)}</td><td className="px-5 py-4 text-right"><button onClick={() => openRecord(item)} className="rounded-lg border border-slate-300 px-3 py-2 font-semibold">Open</button></td></tr>)}</tbody></table></div>{filtered.length === 0 && <p className="p-8 text-center text-slate-500">No matching records.</p>}</div>}
-  </div>;
-}
-
-function ActivityWorkspace({ rows }: { rows: Activity[] }) {
-  return <div className="grid gap-6"><PageHeading eyebrow="Audit history" title="Activity" description="Review recent pipeline and note changes across recruitment operations." /><div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><div className="grid gap-5">{rows.map((item) => <div key={item.id} className="grid gap-2 border-l-2 border-blue-200 pl-4 sm:grid-cols-[1fr_auto]"><div><p className="font-semibold">{item.note || item.action || "Recruitment update"}</p><p className="mt-1 text-sm text-slate-500">{item.entity_type} · {item.entity_id}</p>{item.previous_value !== item.new_value && <p className="mt-1 text-sm text-slate-600">{item.previous_value || "—"} → {item.new_value || "—"}</p>}</div><time className="text-xs text-slate-500">{dateTime(item.created_at)}</time></div>)}{rows.length === 0 && <p className="text-slate-500">No activity recorded yet.</p>}</div></div></div>;
-}
-
-function MessagesWorkspace({ rows, query }: { rows: Message[]; query: string }) {
-  const filtered = rows.filter((item) => !query || [item.full_name, item.email, item.company, item.subject, item.message].join(" ").toLowerCase().includes(query));
-  return <div className="grid gap-6"><PageHeading eyebrow="Inbox" title="Messages" description="Review contact-form messages and follow up from your preferred email client." /><div className="grid gap-4">{filtered.map((item) => <article key={item.id} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"><div><h2 className="text-lg font-bold">{item.subject || "Contact message"}</h2><p className="mt-1 text-sm text-slate-500">{item.full_name || "Unknown sender"} · {item.company || "No company"}</p></div><div className="flex gap-2"><a href={`mailto:${item.email || ""}`} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white">Reply by email</a></div></div><p className="mt-4 whitespace-pre-wrap text-sm leading-7 text-slate-700">{item.message || "—"}</p><p className="mt-4 text-xs text-slate-400">{dateTime(item.created_at)} · {item.email}</p></article>)}{filtered.length === 0 && <p className="rounded-2xl bg-white p-8 text-center text-slate-500">No matching messages.</p>}</div></div>;
-}
-
-function SettingsWorkspace() {
-  return <div className="grid gap-6"><PageHeading eyebrow="Administration" title="Settings" description="Quick links for the current single-admin configuration." /><div className="grid gap-4 md:grid-cols-2"><section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><h2 className="text-lg font-bold">Public website</h2><p className="mt-2 text-sm text-slate-600">Review the candidate-facing experience and published openings.</p><div className="mt-5 flex flex-wrap gap-3"><Link href="/" target="_blank" className="rounded-xl border border-slate-300 px-4 py-2 font-semibold">Open homepage</Link><Link href="/jobs" target="_blank" className="rounded-xl border border-slate-300 px-4 py-2 font-semibold">Open jobs</Link></div></section><section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><h2 className="text-lg font-bold">Session</h2><p className="mt-2 text-sm text-slate-600">The dashboard currently uses the secure single-admin session.</p><button onClick={async () => { await fetch("/api/admin-logout", { method: "POST" }); window.location.href = "/admin/login"; }} className="mt-5 rounded-xl bg-slate-900 px-4 py-2 font-semibold text-white">Log out</button></section></div></div>;
-}
-
-function DrawerShell({ title, subtitle, onClose, children }: { title: string; subtitle: string; onClose: () => void; children: React.ReactNode }) {
-  return <div className="fixed inset-0 z-50 flex justify-end"><button aria-label="Close drawer" className="absolute inset-0 bg-slate-950/45" onClick={onClose} /><aside className="relative h-full w-full max-w-2xl overflow-y-auto bg-white shadow-2xl"><header className="sticky top-0 z-10 flex items-start justify-between border-b border-slate-200 bg-white px-6 py-5"><div><h2 className="text-2xl font-bold">{title}</h2><p className="mt-1 text-sm text-slate-500">{subtitle}</p></div><button onClick={onClose} className="rounded-xl border border-slate-200 px-3 py-2 font-bold">×</button></header><div className="p-6">{children}</div></aside></div>;
-}
-
-function JobDrawer({ record, onClose, onSaved }: { record: Job | null; onClose: () => void; onSaved: (record: Job) => void }) {
-  const [form, setForm] = useState(jobForm(record));
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-  function change(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) { const { name, value, type } = event.target; const checked = event.target instanceof HTMLInputElement ? event.target.checked : false; setForm((current) => ({ ...current, [name]: type === "checkbox" ? checked : value, ...(name === "title" && !current.slug ? { slug: slugify(value) } : {}) })); }
-  async function submit(event: React.FormEvent) { event.preventDefault(); setSaving(true); setError(""); const response = await fetch("/api/job-postings", { method: record ? "PATCH" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...form, ...(record ? { id: record.id } : {}), slug: slugify(form.slug || form.title) }) }); const result = await response.json().catch(() => null); setSaving(false); if (!response.ok) return setError(result?.error || "Unable to save job."); onSaved({ ...(record || { id: crypto.randomUUID(), created_at: new Date().toISOString() }), ...form, slug: slugify(form.slug || form.title) }); }
-  return <DrawerShell title={record ? "Edit job" : "Create job"} subtitle="Update role details and publishing visibility without leaving the jobs list." onClose={onClose}><form onSubmit={submit} className="grid gap-5"><div className="grid gap-5 sm:grid-cols-2"><Field label="Job title"><input className="input" name="title" value={form.title} onChange={change} required /></Field><Field label="Slug"><input className="input" name="slug" value={form.slug} onChange={change} required /></Field><Field label="Department"><input className="input" name="department" value={form.department} onChange={change} /></Field><Field label="Industry"><input className="input" name="industry" value={form.industry} onChange={change} /></Field><Field label="Location"><input className="input" name="location" value={form.location} onChange={change} /></Field><Field label="Work model"><select className="input" name="work_model" value={form.work_model} onChange={change}><option value="">Select</option><option>Remote</option><option>Hybrid</option><option>On-site</option></select></Field><Field label="Employment type"><select className="input" name="employment_type" value={form.employment_type} onChange={change}><option value="">Select</option><option>Full-time</option><option>Part-time</option><option>Contract</option><option>Temporary</option></select></Field><Field label="Salary range"><input className="input" name="salary_range" value={form.salary_range} onChange={change} /></Field><Field label="Application deadline"><input className="input" type="date" name="application_deadline" value={form.application_deadline} onChange={change} /></Field><Field label="Visibility"><select className="input" name="status" value={form.status} onChange={change}><option value="closed">Inactive — hidden publicly</option><option value="open">Active — visible publicly</option></select></Field></div><label className="flex items-center gap-3 text-sm font-semibold"><input type="checkbox" name="featured" checked={form.featured} onChange={change} /> Featured job</label><TextArea label="Short summary" name="short_summary" value={form.short_summary} onChange={change} rows={3} /><TextArea label="Description" name="description" value={form.description} onChange={change} rows={6} required /><TextArea label="Responsibilities" name="responsibilities" value={form.responsibilities} onChange={change} rows={5} /><TextArea label="Requirements" name="requirements" value={form.requirements} onChange={change} rows={5} /><TextArea label="Preferred qualifications" name="preferred_qualifications" value={form.preferred_qualifications} onChange={change} rows={4} />{error && <p role="alert" className="rounded-xl bg-red-50 p-4 text-sm text-red-700">{error}</p>}<div className="sticky bottom-0 -mx-6 mt-4 flex justify-end gap-3 border-t border-slate-200 bg-white px-6 py-4"><button type="button" onClick={onClose} className="rounded-xl border border-slate-300 px-5 py-3 font-semibold">Cancel</button><button disabled={saving} className="rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white disabled:opacity-60">{saving ? "Saving…" : form.status === "open" ? "Save and activate" : "Save as inactive"}</button></div></form></DrawerShell>;
-}
-
-function RecordDrawer({ entity, record, onClose, onSaved }: { entity: RecruitmentEntityType; record: RecruitmentRecord; onClose: () => void; onSaved: (record: RecruitmentRecord) => void }) {
-  const statuses = entity === "job_application" ? applicationStatuses : entity === "employer_request" ? employerStatuses : talentStatuses;
-  const [status, setStatus] = useState(record.status || "new");
-  const [notes, setNotes] = useState(record.internal_notes || "");
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-  async function save() { setSaving(true); setError(""); const response = await fetch("/api/admin/recruitment", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ entityType: entity, id: record.id, status, internalNotes: notes }) }); const result = await response.json().catch(() => null); setSaving(false); if (!response.ok) return setError(result?.error || "Unable to save update."); onSaved({ ...record, status, internal_notes: notes, status_updated_at: new Date().toISOString() }); }
-  const title = record.company_name || record.full_name || "Recruitment record";
-  return <DrawerShell title={title} subtitle={record.job_roles || record.job_title_snapshot || record.target_roles || record.email || "Recruitment detail"} onClose={onClose}><div className="grid gap-6"><div className="grid gap-4 rounded-2xl bg-slate-50 p-5 sm:grid-cols-2"><Detail label="Email" value={record.email} /><Detail label="Phone" value={record.phone} /><Detail label="Location" value={record.location} /><Detail label="Received" value={dateTime(record.created_at)} /><Detail label="Reference" value={record.application_reference || record.registration_reference} /><Detail label="Last updated" value={dateTime(record.status_updated_at)} /></div><Field label="Pipeline status"><select className="input" value={status} onChange={(event) => setStatus(event.target.value)}>{statuses.map((item) => <option key={item} value={item}>{humanizeStatus(item)}</option>)}</select></Field><TextArea label="Private internal notes" value={notes} onChange={(event) => setNotes(event.target.value)} rows={8} maxLength={4000} placeholder="Screening observations, follow-up context, or next action." />{record.resume_url && <a href={record.resume_url} target="_blank" rel="noreferrer" className="w-fit rounded-xl border border-slate-300 px-4 py-3 font-semibold">Download résumé</a>}{record.email && <a href={`mailto:${record.email}`} className="w-fit rounded-xl border border-slate-300 px-4 py-3 font-semibold">Email contact</a>}{error && <p className="rounded-xl bg-red-50 p-4 text-sm text-red-700">{error}</p>}<div className="sticky bottom-0 -mx-6 flex justify-end gap-3 border-t border-slate-200 bg-white px-6 py-4"><button onClick={onClose} className="rounded-xl border border-slate-300 px-5 py-3 font-semibold">Cancel</button><button onClick={save} disabled={saving} className="rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white disabled:opacity-60">{saving ? "Saving…" : "Save update"}</button></div></div></DrawerShell>;
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) { return <label className="grid gap-2 text-sm font-semibold text-slate-700"><span>{label}</span>{children}</label>; }
-function TextArea({ label, ...props }: React.TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string }) { return <label className="grid gap-2 text-sm font-semibold text-slate-700"><span>{label}</span><textarea {...props} className="input min-h-28 resize-y" /></label>; }
-function Detail({ label, value }: { label: string; value?: string | null }) { return <div><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p><p className="mt-1 break-words text-sm text-slate-800">{value || "—"}</p></div>; }
+function DrawerShell({title,subtitle,onClose,children}:{title:string;subtitle:string;onClose:()=>void;children:React.ReactNode}){useEffect(()=>{const previous=document.body.style.overflow;document.body.style.overflow="hidden";const key=(e:KeyboardEvent)=>{if(e.key==="Escape")onClose()};window.addEventListener("keydown",key);return()=>{document.body.style.overflow=previous;window.removeEventListener("keydown",key)}},[onClose]);return <div className="fixed inset-0 z-50 flex justify-end"><button aria-label="Close drawer" className="absolute inset-0 bg-slate-950/45 backdrop-blur-[1px]" onClick={onClose}/><aside role="dialog" aria-modal="true" className="relative h-full w-full overflow-y-auto bg-white shadow-2xl sm:max-w-2xl"><header className="sticky top-0 z-10 flex items-start justify-between border-b border-slate-200 bg-white px-5 py-4 sm:px-6 sm:py-5"><div><h2 className="text-2xl font-bold">{title}</h2><p className="mt-1 text-sm text-slate-500">{subtitle}</p></div><button aria-label="Close drawer" onClick={onClose} className="rounded-xl border border-slate-200 px-3 py-2 font-bold">×</button></header><div className="p-5 sm:p-6">{children}</div></aside></div>}
+function JobDrawer({record,onClose,onSaved}:{record:Job|null;onClose:()=>void;onSaved:(r:Job)=>void}){const[form,setForm]=useState(jobForm(record)),[saving,setSaving]=useState(false),[error,setError]=useState("");function change(e:React.ChangeEvent<HTMLInputElement|HTMLTextAreaElement|HTMLSelectElement>){const{name,value,type}=e.target,checked=e.target instanceof HTMLInputElement?e.target.checked:false;setForm(cur=>({...cur,[name]:type==="checkbox"?checked:value,...(name==="title"&&!cur.slug?{slug:slugify(value)}:{})}))}async function submit(e:React.FormEvent){e.preventDefault();if(form.status==="open"&&!window.confirm("Save this job and make it visible on the public jobs page?"))return;setSaving(true);setError("");const id=record?.id||crypto.randomUUID(),normalized={...form,slug:slugify(form.slug||form.title)},response=await fetch("/api/job-postings",{method:record?"PATCH":"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...normalized,...(record?{id}:{})})}),result=await response.json().catch(()=>null);setSaving(false);if(!response.ok)return setError(result?.error||"Unable to save job.");onSaved({...record||{id,created_at:new Date().toISOString()},...normalized})}return <DrawerShell title={record?"Edit job":"Create job"} subtitle="Update role details and publishing visibility without leaving the jobs list." onClose={onClose}><form onSubmit={submit} className="grid gap-5"><div className="grid gap-5 sm:grid-cols-2"><Field label="Job title"><input className="input" name="title" value={form.title} onChange={change} required/></Field><Field label="Slug"><input className="input" name="slug" value={form.slug} onChange={change} required/></Field><Field label="Department"><input className="input" name="department" value={form.department} onChange={change}/></Field><Field label="Industry"><input className="input" name="industry" value={form.industry} onChange={change}/></Field><Field label="Location"><input className="input" name="location" value={form.location} onChange={change}/></Field><Field label="Work model"><select className="input" name="work_model" value={form.work_model} onChange={change}><option value="">Select</option><option>Remote</option><option>Hybrid</option><option>On-site</option></select></Field><Field label="Employment type"><select className="input" name="employment_type" value={form.employment_type} onChange={change}><option value="">Select</option><option>Full-time</option><option>Part-time</option><option>Contract</option><option>Temporary</option></select></Field><Field label="Salary range"><input className="input" name="salary_range" value={form.salary_range} onChange={change}/></Field><Field label="Application deadline"><input className="input" type="date" name="application_deadline" value={form.application_deadline} onChange={change}/></Field><Field label="Visibility"><select className="input" name="status" value={form.status} onChange={change}><option value="closed">Inactive — hidden publicly</option><option value="open">Active — visible publicly</option></select></Field></div><label className="flex items-center gap-3 text-sm font-semibold"><input type="checkbox" name="featured" checked={form.featured} onChange={change}/> Featured job</label><TextArea label="Short summary" name="short_summary" value={form.short_summary} onChange={change} rows={3}/><TextArea label="Description" name="description" value={form.description} onChange={change} rows={6} required/><TextArea label="Responsibilities" name="responsibilities" value={form.responsibilities} onChange={change} rows={5}/><TextArea label="Requirements" name="requirements" value={form.requirements} onChange={change} rows={5}/><TextArea label="Preferred qualifications" name="preferred_qualifications" value={form.preferred_qualifications} onChange={change} rows={4}/>{error&&<p role="alert" className="rounded-xl bg-red-50 p-4 text-sm text-red-700">{error}</p>}<div className="sticky bottom-0 -mx-5 mt-4 flex justify-end gap-3 border-t border-slate-200 bg-white px-5 py-4 sm:-mx-6 sm:px-6"><button type="button" onClick={onClose} className="rounded-xl border border-slate-300 px-5 py-3 font-semibold">Cancel</button><button disabled={saving} className="rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white disabled:opacity-60">{saving?"Saving…":form.status==="open"?"Save and activate":"Save as inactive"}</button></div></form></DrawerShell>}
+function RecordDrawer({entity,record,onClose,onSaved}:{entity:RecruitmentEntityType;record:RecruitmentRecord;onClose:()=>void;onSaved:(r:RecruitmentRecord)=>void}){const statuses=entity==="job_application"?applicationStatuses:entity==="employer_request"?employerStatuses:talentStatuses,[status,setStatus]=useState(record.status||"new"),[notes,setNotes]=useState(record.internal_notes||""),[saving,setSaving]=useState(false),[error,setError]=useState("");async function save(){if(status!==(record.status||"new")&&!window.confirm(`Move this record to “${humanizeStatus(status)}”?`))return;setSaving(true);setError("");const response=await fetch("/api/admin/recruitment",{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({entityType:entity,id:record.id,status,internalNotes:notes})}),result=await response.json().catch(()=>null);setSaving(false);if(!response.ok)return setError(result?.error||"Unable to save update.");onSaved({...record,status,internal_notes:notes,status_updated_at:new Date().toISOString()})}const title=record.company_name||record.full_name||"Recruitment record";return <DrawerShell title={title} subtitle={record.job_roles||record.job_title_snapshot||record.target_roles||record.email||"Recruitment detail"} onClose={onClose}><div className="grid gap-6"><div className="grid gap-4 rounded-2xl bg-slate-50 p-5 sm:grid-cols-2"><Detail label="Email" value={record.email}/><Detail label="Phone" value={record.phone}/><Detail label="Location" value={record.location}/><Detail label="Received" value={dateTime(record.created_at)}/><Detail label="Reference" value={record.application_reference||record.registration_reference}/><Detail label="Experience" value={record.experience_level||record.hiring_timeline}/></div><Field label="Pipeline status"><select className="input" value={status} onChange={e=>setStatus(e.target.value)}>{statuses.map(i=><option key={i} value={i}>{humanizeStatus(i)}</option>)}</select></Field><Field label="Private internal notes"><textarea className="input min-h-36" maxLength={4000} value={notes} onChange={e=>setNotes(e.target.value)} placeholder="Screening observations, follow-up context, or next action."/></Field><div className="flex flex-wrap gap-3">{record.email&&<a href={`mailto:${record.email}`} className="rounded-xl border border-slate-300 px-4 py-3 font-semibold">Email</a>}{record.resume_url&&<a href={record.resume_url} target="_blank" rel="noreferrer" className="rounded-xl border border-slate-300 px-4 py-3 font-semibold">Open résumé</a>}</div>{error&&<p role="alert" className="rounded-xl bg-red-50 p-4 text-sm text-red-700">{error}</p>}<div className="sticky bottom-0 -mx-5 flex justify-end gap-3 border-t border-slate-200 bg-white px-5 py-4 sm:-mx-6 sm:px-6"><button onClick={onClose} className="rounded-xl border border-slate-300 px-5 py-3 font-semibold">Cancel</button><button disabled={saving} onClick={save} className="rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white disabled:opacity-60">{saving?"Saving…":"Save update"}</button></div></div></DrawerShell>}
+function Field({label,children}:{label:string;children:React.ReactNode}){return <label className="grid gap-2 text-sm font-semibold text-slate-800"><span>{label}</span>{children}</label>}
+function TextArea({label,...props}:React.TextareaHTMLAttributes<HTMLTextAreaElement>&{label:string}){return <Field label={label}><textarea className="input" {...props}/></Field>}
+function Detail({label,value}:{label:string;value?:string|null}){return <div><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p><p className="mt-1 break-words text-sm text-slate-800">{value||"—"}</p></div>}
