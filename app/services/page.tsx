@@ -86,7 +86,7 @@ export default function ServicesPage() {
 
             <StaggerGroup className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {services.map((service, index) => {
-                const Icon = serviceIcons[index % serviceIcons.length];
+                const Icon = serviceIcons[index % serviceIcons.length] ?? UsersRound;
                 return (
                   <StaggerItem key={service.title}>
                     <HoverCard className="group h-full rounded-3xl border border-slate-200 bg-white p-7 shadow-sm">
