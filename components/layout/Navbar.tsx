@@ -43,10 +43,6 @@ export default function Navbar() {
   }, [mobileOpen]);
 
   useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
-
-  useEffect(() => {
     if (!mobileOpen) return;
 
     function onKeyDown(event: KeyboardEvent) {
@@ -186,6 +182,7 @@ export default function Navbar() {
                       <Link
                         href={link.href}
                         aria-current={active ? "page" : undefined}
+                        onClick={() => setMobileOpen(false)}
                         className={`flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold transition ${
                           active ? "bg-blue-50 text-blue-700" : "text-slate-700 hover:bg-slate-50 hover:text-blue-700"
                         }`}
@@ -208,6 +205,7 @@ export default function Navbar() {
                         action: "start_hiring_brief",
                       },
                     }}
+                    onClick={() => setMobileOpen(false)}
                     className="mt-2 block"
                   >
                     <MotionButton className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-blue-700">
