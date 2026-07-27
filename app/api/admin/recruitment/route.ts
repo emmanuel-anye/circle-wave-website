@@ -12,8 +12,9 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
 
-  const body = await request.json().catch(() => null);
-  const parsed = recruitmentUpdateSchema.safeParse(body);
+  const parsed = recruitmentUpdateSchema.safeParse(
+    await request.json().catch(() => null)
+  );
   if (!parsed.success) {
     return NextResponse.json(
       { error: "Please check the requested update." },
@@ -21,7 +22,7 @@ export async function PATCH(request: Request) {
     );
   }
 
-  const { entityType, id, status, internalNotes } = parsed.data;
+  const { entityType, id, status, internalNotes, assignedRecruiterId } = parsed.data;
   if (status && !isAllowedStatus(entityType, status)) {
     return NextResponse.json({ error: "Invalid pipeline status." }, { status: 400 });
   }
@@ -30,7 +31,7 @@ export async function PATCH(request: Request) {
   const table = tableForEntity(entityType);
   const { data: current, error: readError } = await supabase
     .from(table)
-    .select("id,status,internal_notes")
+    .select("id,status,internal_notes,assigned_recruiter_id")
     .eq("id", id)
     .maybeSingle();
 
@@ -38,13 +39,33 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Record not found." }, { status: 404 });
   }
 
-  const updates: Record<string, string> = {};
+  if (assignedRecruiterId) {
+    const { data: recruiter } = await supabase
+      .from("recruiters")
+      .select("id,active")
+      .eq("id", assignedRecruiterId)
+      .maybeSingle();
+    if (!recruiter?.active) {
+      return NextResponse.json(
+        { error: "Choose an active recruiter." },
+        { status: 400 }
+      );
+    }
+  }
+
+  const updates: Record<string, string | null> = {};
   if (status !== undefined && status !== current.status) {
     updates.status = status;
     updates.status_updated_at = new Date().toISOString();
   }
   if (internalNotes !== undefined && internalNotes !== (current.internal_notes ?? "")) {
     updates.internal_notes = internalNotes;
+  }
+  if (
+    assignedRecruiterId !== undefined &&
+    assignedRecruiterId !== current.assigned_recruiter_id
+  ) {
+    updates.assigned_recruiter_id = assignedRecruiterId;
   }
 
   if (Object.keys(updates).length === 0) {
