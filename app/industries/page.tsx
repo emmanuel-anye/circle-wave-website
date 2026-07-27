@@ -59,7 +59,7 @@ export default function IndustriesPage() {
               </div>
             </Reveal>
 
-            <Reveal delay={0.08}>
+            <Reveal>
               <div className="rounded-[2rem] border border-white/15 bg-white/10 p-6 shadow-2xl backdrop-blur-xl sm:p-8">
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-100">What every sector needs</p>
                 <div className="mt-6 space-y-3">
