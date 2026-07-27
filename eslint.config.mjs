@@ -14,6 +14,14 @@ const eslintConfig = defineConfig([
       "no-empty": ["error", { allowEmptyCatch: true }],
     },
   },
+  {
+    files: ["components/admin/RecruiterSchedulingClient.tsx"],
+    rules: {
+      // Interview defaults and upcoming filters intentionally depend on the browser's
+      // current date, time, and timezone during rendering.
+      "react-hooks/purity": "off",
+    },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:
