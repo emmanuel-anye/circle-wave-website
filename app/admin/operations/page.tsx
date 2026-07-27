@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import PageTransition from "@/components/ui/PageTransition";
-import RecruitmentOperationsClient from "@/components/admin/RecruitmentOperationsClient";
+import RecruitmentProductivityClient from "@/components/admin/RecruitmentProductivityClient";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { getSupabaseAdmin } from "@/lib/supabase-server";
 
@@ -31,19 +31,18 @@ export default async function RecruitmentOperationsPage() {
   return (
     <PageTransition>
       <section className="bg-slate-50 section">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="mx-auto max-w-[1680px] px-4 sm:px-6">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
             Internal recruitment operations
           </p>
           <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl md:text-5xl">
-            Recruitment pipeline
+            Recruitment productivity workspace
           </h1>
           <p className="mt-4 max-w-3xl text-lg leading-8 text-slate-600">
-            Track candidates and employer opportunities, record private notes,
-            review activity, and export operational data.
+            Review candidate and employer pipelines, apply bulk updates, use reusable communication templates, and audit recent activity.
           </p>
 
-          <RecruitmentOperationsClient
+          <RecruitmentProductivityClient
             applications={applications.data ?? []}
             employers={employers.data ?? []}
             talent={talent.data ?? []}
