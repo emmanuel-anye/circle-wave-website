@@ -1,5 +1,6 @@
 "use client";
 
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { formStatusMotion } from "@/lib/motion";
 
@@ -12,6 +13,7 @@ export default function FormStatus({
 }) {
   const prefersReducedMotion = useReducedMotion();
   const message = error || success;
+  const Icon = error ? AlertCircle : CheckCircle2;
 
   return (
     <AnimatePresence mode="wait" initial={false}>
@@ -25,13 +27,23 @@ export default function FormStatus({
           initial={prefersReducedMotion ? false : "hidden"}
           animate="visible"
           exit={prefersReducedMotion ? undefined : "exit"}
-          className={`rounded-xl border px-4 py-3 text-sm ${
+          className={`flex items-start gap-3 rounded-2xl border px-4 py-4 text-sm shadow-sm ${
             error
-              ? "border-red-200 bg-red-50 text-red-700"
-              : "border-green-200 bg-green-50 text-green-700"
+              ? "border-red-200 bg-red-50 text-red-800"
+              : "border-emerald-200 bg-emerald-50 text-emerald-800"
           }`}
         >
-          {message}
+          <span
+            className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
+              error ? "bg-red-100 text-red-700" : "bg-emerald-100 text-emerald-700"
+            }`}
+          >
+            <Icon className="h-5 w-5" aria-hidden="true" />
+          </span>
+          <div className="pt-0.5">
+            <p className="font-semibold">{error ? "Please check the form" : "Success"}</p>
+            <p className="mt-1 leading-6">{message}</p>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>
