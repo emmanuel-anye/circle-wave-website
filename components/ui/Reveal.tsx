@@ -9,11 +9,13 @@ export default function Reveal({
   className = "",
   once = true,
   amount = 0.2,
+  delay = 0,
 }: {
   children: ReactNode;
   className?: string;
   once?: boolean;
   amount?: number;
+  delay?: number;
 }) {
   const prefersReducedMotion = useReducedMotion();
 
@@ -25,6 +27,7 @@ export default function Reveal({
       initial={prefersReducedMotion ? false : "hidden"}
       whileInView={prefersReducedMotion ? undefined : "visible"}
       viewport={{ once, amount }}
+      transition={{ delay }}
     >
       {children}
     </motion.div>
