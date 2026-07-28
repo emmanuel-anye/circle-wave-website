@@ -1,5 +1,12 @@
 import Link from "next/link";
-import { ArrowUpRight, Building2, CalendarClock, MapPin, WalletCards } from "lucide-react";
+import {
+  ArrowUpRight,
+  Building2,
+  CalendarClock,
+  MapPin,
+  WalletCards,
+  type LucideIcon,
+} from "lucide-react";
 import JobBadges from "@/components/jobs/JobBadges";
 import type { JobPosting } from "@/lib/jobs";
 import { formatJobDeadline } from "@/lib/jobs";
@@ -78,7 +85,7 @@ function Meta({
   label,
   value,
 }: {
-  icon: typeof MapPin;
+  icon: LucideIcon;
   label: string;
   value: string;
 }) {
