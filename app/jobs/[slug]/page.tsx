@@ -10,6 +10,7 @@ import {
   Clock3,
   MapPin,
   WalletCards,
+  type LucideIcon,
 } from "lucide-react";
 import JobBadges from "@/components/jobs/JobBadges";
 import JobCard from "@/components/jobs/JobCard";
@@ -67,7 +68,7 @@ export default async function JobDetailPage({ params }: JobPageProps) {
   ].filter(Boolean) as Array<{
     label: string;
     value: string;
-    icon: typeof MapPin;
+    icon: LucideIcon;
   }>;
 
   return (
@@ -231,7 +232,7 @@ function Meta({
 }: {
   label: string;
   value: string;
-  icon: typeof MapPin;
+  icon: LucideIcon;
   compact?: boolean;
 }) {
   return (
