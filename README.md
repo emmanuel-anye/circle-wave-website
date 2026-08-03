@@ -80,3 +80,4 @@ for security assumptions, date rules, deferred messaging, and manual acceptance.
 Phase 2 requires no new environment variables. Existing optional Resend
 configuration continues to control application confirmations; talent-network
 registration does not subscribe candidates to job alerts.
+
